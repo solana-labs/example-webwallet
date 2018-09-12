@@ -1,0 +1,31 @@
+html {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: #303030;
+  font-family: "Rubik", sans-serif;
+}
+
+}
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+.well, .panel, .alert {
+  margin: 20px;
+}
+
+.logo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  width: 50%;
+}
