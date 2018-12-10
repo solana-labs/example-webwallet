@@ -59,7 +59,7 @@
     "react-bootstrap": "^0.32.1",
     "react-dom": "^16.4.2",
     "sha256": "^0.2.0",
-    "style-loader": "^0.22.1",
+    "style-loader": "^0.23.1",
     "tweetnacl": "^1.0.0"
   }
 }
