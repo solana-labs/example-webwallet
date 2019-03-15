@@ -50,7 +50,7 @@
     "css-loader": "^2.0.0",
     "event-emitter": "^0.3.5",
     "express": "^4.16.3",
-    "flow-bin": "^0.94.0",
+    "flow-bin": "^0.95.0",
     "jayson": "^2.0.6",
     "joi": "^14.3.0",
     "localforage": "^1.7.2",
