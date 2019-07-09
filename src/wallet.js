@@ -18,6 +18,7 @@ import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import * as web3 from '@solana/web3.js';
 
+import {Account} from './account';
 import {Settings} from './settings';
 
 class PublicKeyInput extends React.Component {
@@ -66,7 +67,7 @@ class PublicKeyInput extends React.Component {
   }
 }
 PublicKeyInput.propTypes = {
-  onPublicKey: PropTypes.function,
+  onPublicKey: PropTypes.func,
 };
 
 class TokenInput extends React.Component {
@@ -110,7 +111,7 @@ class TokenInput extends React.Component {
   }
 }
 TokenInput.propTypes = {
-  onAmount: PropTypes.function,
+  onAmount: PropTypes.func,
 };
 
 class SignatureInput extends React.Component {
@@ -159,7 +160,7 @@ class SignatureInput extends React.Component {
   }
 }
 SignatureInput.propTypes = {
-  onSignature: PropTypes.function,
+  onSignature: PropTypes.func,
 };
 
 class DismissibleErrors extends React.Component {
@@ -180,7 +181,7 @@ class DismissibleErrors extends React.Component {
 }
 DismissibleErrors.propTypes = {
   errors: PropTypes.array,
-  onDismiss: PropTypes.function,
+  onDismiss: PropTypes.func,
 };
 
 class BusyModal extends React.Component {
@@ -223,7 +224,7 @@ class SettingsModal extends React.Component {
           <Modal.Title id="contained-modal-title-lg">Settings</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Settings store={this.props.store} />
+          <Settings store={this.props.store} onHide={this.props.onHide} />
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={this.props.onHide}>Close</Button>
@@ -233,7 +234,7 @@ class SettingsModal extends React.Component {
   }
 }
 SettingsModal.propTypes = {
-  onHide: PropTypes.function,
+  onHide: PropTypes.func,
   store: PropTypes.object,
 };
 
@@ -248,11 +249,6 @@ export class Wallet extends React.Component {
     confirmationSignature: null,
     transactionConfirmed: null,
   };
-
-  constructor(props) {
-    super(props);
-    this.onStoreChange();
-  }
 
   setConfirmationSignature(confirmationSignature) {
     this.setState({
@@ -297,13 +293,18 @@ export class Wallet extends React.Component {
   }
 
   onStoreChange = () => {
-    this.web3solAccount = new web3.Account(this.props.store.accountSecretKey);
+    if (this.props.store.accountSecretKey) {
+      this.web3solAccount = new web3.Account(this.props.store.accountSecretKey);
+    } else {
+      this.web3solAccount = null;
+    }
     this.web3sol = new web3.Connection(this.props.store.networkEntryPoint);
     this.forceUpdate();
   };
 
   componentDidMount() {
     this.props.store.onChange(this.onStoreChange);
+    this.onStoreChange();
     this.refreshBalance();
   }
 
@@ -316,11 +317,13 @@ export class Wallet extends React.Component {
   }
 
   refreshBalance() {
-    this.runModal('Updating Account Balance', 'Please wait...', async () => {
-      this.setState({
-        balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+    if (this.web3solAccount) {
+      this.runModal('Updating Account Balance', 'Please wait...', async () => {
+        this.setState({
+          balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+        });
       });
-    });
+    }
   }
 
   requestAirdrop() {
@@ -363,6 +366,13 @@ export class Wallet extends React.Component {
   }
 
   render() {
+    if (!this.web3solAccount) {
+      return (
+        <Account store={this.props.store} />
+      );
+    }
+
+
     const copyTooltip = (
       <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
     );
@@ -407,11 +417,11 @@ export class Wallet extends React.Component {
         {settingsModal}
         <DismissibleErrors
           errors={this.state.errors}
-          onDismiss={index => this.dismissError(index)}
+          onDismiss={(index) => this.dismissError(index)}
         />
         <Well>
-          Account Public Key:
           <FormGroup>
+            <ControlLabel>Account Public Key</ControlLabel>
             <InputGroup>
               <FormControl
                 readOnly

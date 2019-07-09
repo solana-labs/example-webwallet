@@ -1,6 +1,8 @@
 import localforage from 'localforage';
 import EventEmitter from 'event-emitter';
 import * as web3 from '@solana/web3.js';
+import nacl from 'tweetnacl';
+import * as bip39 from 'bip39';
 
 export class Store {
   constructor() {
@@ -22,18 +24,21 @@ export class Store {
       this.networkEntryPoint = web3.testnetChannelEndpoint();
     }
 
-    if (!this.accountSecretKey) {
-      await this.createAccount();
-      return;
-    }
     this._ee.emit('change');
   }
 
-  async createAccount() {
-    const account = new web3.Account();
-    this.accountSecretKey = account.secretKey;
+  async resetAccount() {
+    this.accountSecretKey = null;
     this._ee.emit('change');
-    await this._lf.setItem('accountSecretKey', account.secretKey);
+    await this._lf.setItem('accountSecretKey', this.accountSecretKey);
+  }
+
+  async createAccountFromSeed(seedPhrase) {
+    const seed = Buffer.from(bip39.mnemonicToEntropy(seedPhrase));
+    const keyPair = nacl.sign.keyPair.fromSeed(seed);
+    this.accountSecretKey = keyPair.secretKey;
+    this._ee.emit('change');
+    await this._lf.setItem('accountSecretKey', keyPair.secretKey);
   }
 
   async setNetworkEntryPoint(value) {

@@ -73,7 +73,8 @@ export class Settings extends React.Component {
   }
 
   async resetAccount() {
-    await this.props.store.createAccount();
+    await this.props.store.resetAccount();
+    this.props.onHide();
   }
 
   render() {
@@ -86,6 +87,7 @@ export class Settings extends React.Component {
             <FormGroup validationState={this.state.validationState}>
               <InputGroup>
                 <DropdownButton
+                  id="network-dropdown"
                   componentClass={InputGroup.Button}
                   title="Network"
                   onSelect={::this.setNetworkEntryPoint}
@@ -129,4 +131,5 @@ export class Settings extends React.Component {
 }
 Settings.propTypes = {
   store: PropTypes.object,
+  onHide: PropTypes.func,
 };
