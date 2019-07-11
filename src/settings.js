@@ -52,7 +52,7 @@ export class Settings extends React.Component {
 
     try {
       const [
-        blockhash /*, feeCalculator*/
+        blockhash /*, feeCalculator*/,
       ] = await connection.getRecentBlockhash();
       console.log('blockhash:', blockhash);
       if (this.state.checkNetworkCount <= checkNetworkCount) {

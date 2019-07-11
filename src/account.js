@@ -45,13 +45,12 @@ export class Account extends React.Component {
   }
 
   onModeChange(walletMode) {
-    this.setState({ walletMode });
+    this.setState({walletMode});
   }
 
   onRecoverPhraseChange(e) {
-    this.setState({ recoveredPhrase: e.target.value });
+    this.setState({recoveredPhrase: e.target.value});
   }
-
 
   validateRecoverPhrase() {
     if (this.state.recoveredPhrase) {
@@ -68,16 +67,30 @@ export class Account extends React.Component {
     return (
       <Well>
         <h2>Account Setup</h2>
-        <p>A locally cached wallet account was not found. Generate a new one or recover an existing wallet from its seed phrase.</p>
+        <p>
+          A locally cached wallet account was not found. Generate a new one or
+          recover an existing wallet from its seed phrase.
+        </p>
         <hr />
         <FormGroup>
-          <ToggleButtonGroup name="options" value={this.state.walletMode} onChange={(mode) => this.onModeChange(mode)} justified>
-            <ToggleButton value={GENERATE_WALLET_MODE}>Generate New Wallet</ToggleButton>
-            <ToggleButton value={RECOVER_WALLET_MODE}>Recover Existing Wallet</ToggleButton>
+          <ToggleButtonGroup
+            name="options"
+            value={this.state.walletMode}
+            onChange={mode => this.onModeChange(mode)}
+            justified
+          >
+            <ToggleButton value={GENERATE_WALLET_MODE}>
+              Generate New Wallet
+            </ToggleButton>
+            <ToggleButton value={RECOVER_WALLET_MODE}>
+              Recover Existing Wallet
+            </ToggleButton>
           </ToggleButtonGroup>
         </FormGroup>
-        {this.state.walletMode === GENERATE_WALLET_MODE && this.renderGenerateWalletMode()}
-        {this.state.walletMode === RECOVER_WALLET_MODE && this.renderRecoverWalletMode()}
+        {this.state.walletMode === GENERATE_WALLET_MODE &&
+          this.renderGenerateWalletMode()}
+        {this.state.walletMode === RECOVER_WALLET_MODE &&
+          this.renderRecoverWalletMode()}
       </Well>
     );
   }
@@ -86,12 +99,15 @@ export class Account extends React.Component {
     return (
       <React.Fragment>
         <FormGroup validationState={this.validateRecoverPhrase()}>
-          <ControlLabel>Enter a valid seed phrase to recover a wallet</ControlLabel>
+          <ControlLabel>
+            Enter a valid seed phrase to recover a wallet
+          </ControlLabel>
           <FormControl
             type="text"
             value={this.state.recoveredPhrase}
             placeholder="Enter seed phrase"
-            onChange={(e) => this.onRecoverPhraseChange(e)} />
+            onChange={e => this.onRecoverPhraseChange(e)}
+          />
           <FormControl.Feedback />
           <HelpBlock>Seed phrase should be 12 words in length.</HelpBlock>
         </FormGroup>
@@ -140,7 +156,10 @@ export class Account extends React.Component {
           </InputGroup>
         </FormGroup>
         <hr />
-        <p><b>WARNING:</b> The seed phrase will not be shown again, copy it down to recover this wallet in the future.</p>
+        <p>
+          <b>WARNING:</b> The seed phrase will not be shown again, copy it down
+          to recover this wallet in the future.
+        </p>
         <Button bsStyle="primary" onClick={() => this.createAccount()}>
           Create Account
         </Button>

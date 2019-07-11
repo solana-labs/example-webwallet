@@ -31,7 +31,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
-    indent: ['error', 2, {MemberExpression: 0}],
+    indent: ['error', 2, {MemberExpression: 0, SwitchCase: 1}],
     'linebreak-style': ['error', 'unix'],
     'no-console': [0],
     quotes: [
