@@ -1,18 +1,15 @@
 html {
   height: 100%;
   width: 100%;
-  position: fixed;
 }
 
 body {
   height: 100%;
   width: 100%;
-  overflow: hidden;
   background-color: #303030;
   font-family: "Rubik", sans-serif;
 }
 
-}
 #app {
   height: 100%;
   width: 100%;
@@ -20,6 +17,10 @@ body {
 
 .well, .panel, .alert {
   margin: 20px;
+}
+
+button.margin-left {
+  margin-left: 5px;
 }
 
 .logo {

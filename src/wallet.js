@@ -6,6 +6,7 @@ import {
   FormControl,
   FormGroup,
   Glyphicon,
+  HelpBlock,
   InputGroup,
   Modal,
   OverlayTrigger,
@@ -27,6 +28,10 @@ class PublicKeyInput extends React.Component {
     validationState: null,
   };
 
+  componentDidMount() {
+    this.handleChange(this.props.defaultValue || '');
+  }
+
   getValidationState(value) {
     const length = value.length;
     if (length === 44) {
@@ -42,8 +47,7 @@ class PublicKeyInput extends React.Component {
     return null;
   }
 
-  handleChange(e) {
-    const {value} = e.target;
+  handleChange(value) {
     const validationState = this.getValidationState(value);
     this.setState({value, validationState});
     this.props.onPublicKey(validationState === 'success' ? value : null);
@@ -58,7 +62,7 @@ class PublicKeyInput extends React.Component {
             type="text"
             value={this.state.value}
             placeholder="Enter the public key of the recipient"
-            onChange={e => this.handleChange(e)}
+            onChange={e => this.handleChange(e.target.value)}
           />
           <FormControl.Feedback />
         </FormGroup>
@@ -68,28 +72,36 @@ class PublicKeyInput extends React.Component {
 }
 PublicKeyInput.propTypes = {
   onPublicKey: PropTypes.func,
+  defaultValue: PropTypes.string,
 };
 
 class TokenInput extends React.Component {
   state = {
     value: '',
     validationState: null,
+    help: '',
   };
+
+  componentDidMount() {
+    this.handleChange(this.props.defaultValue || '');
+  }
 
   getValidationState(value) {
     if (value.length === 0) {
-      return null;
+      return [null, ''];
+    }
+    if (parseInt(value) > this.props.maxValue) {
+      return ['error', 'Insufficient funds'];
     }
     if (value.match(/^\d+$/)) {
-      return 'success';
+      return ['success', ''];
     }
-    return 'error';
+    return ['error', 'Not a valid number'];
   }
 
-  handleChange(e) {
-    const {value} = e.target;
-    const validationState = this.getValidationState(value);
-    this.setState({value, validationState});
+  handleChange(value) {
+    const [validationState, help] = this.getValidationState(value);
+    this.setState({value, validationState, help});
     this.props.onAmount(validationState === 'success' ? value : null);
   }
 
@@ -102,8 +114,9 @@ class TokenInput extends React.Component {
             type="text"
             value={this.state.value}
             placeholder="Enter amount to transfer"
-            onChange={e => this.handleChange(e)}
+            onChange={e => this.handleChange(e.target.value)}
           />
+          <HelpBlock>{this.state.help}</HelpBlock>
           <FormControl.Feedback />
         </FormGroup>
       </form>
@@ -112,6 +125,8 @@ class TokenInput extends React.Component {
 }
 TokenInput.propTypes = {
   onAmount: PropTypes.func,
+  defaultValue: PropTypes.string,
+  maxValue: PropTypes.number,
 };
 
 class SignatureInput extends React.Component {
@@ -244,8 +259,13 @@ export class Wallet extends React.Component {
     busyModal: null,
     settingsModal: false,
     balance: 0,
-    recipientPublicKey: null,
-    recipientAmount: null,
+    requestMode: false,
+    requesterOrigin: '',
+    requestPending: false,
+    requestedPublicKey: '',
+    requestedAmount: 0,
+    recipientPublicKey: '',
+    recipientAmount: 0,
     confirmationSignature: null,
     transactionConfirmed: null,
   };
@@ -302,10 +322,48 @@ export class Wallet extends React.Component {
     this.forceUpdate();
   };
 
+  onAddFunds(params, origin) {
+    if (!params || this.state.requestPending) return;
+    if (!params.pubkey || !params.network) {
+      if (!params.pubkey) this.addError(`Request did not specify a public key`);
+      if (!params.network) this.addError(`Request did not specify a network`);
+      return;
+    }
+
+    if (params.network === this.props.store.networkEntryPoint) {
+      this.setState({
+        requesterOrigin: origin,
+        requestPending: true,
+        requestedAmount: `${params.amount || ''}`,
+        requestedPublicKey: params.pubkey,
+      });
+    } else {
+      this.addError(`Request network "${params.network}" does not match wallet network`);
+    }
+  }
+
+  onWindowOpen() {
+    this.setState({ requestMode: true });
+    window.addEventListener('message', (e) => {
+      if (e.data) {
+        switch (e.data.method) {
+        case 'addFunds':
+          this.onAddFunds(e.data.params, e.origin);
+          return true;
+        }
+      }
+    });
+
+    window.opener.postMessage({method: 'ready'}, '*');
+  }
+
   componentDidMount() {
     this.props.store.onChange(this.onStoreChange);
     this.onStoreChange();
     this.refreshBalance();
+    if (window.opener) {
+      this.onWindowOpen();
+    }
   }
 
   componentWillUnmount() {
@@ -335,22 +393,41 @@ export class Wallet extends React.Component {
     });
   }
 
-  sendTransaction() {
+  sendTransaction(closeOnSuccess) {
     this.runModal('Sending Transaction', 'Please wait...', async () => {
+      const amount = this.state.recipientAmount;
+      this.setState({requestedAmount: 0, requestPending: false});
       const transaction = web3.SystemProgram.transfer(
         this.web3solAccount.publicKey,
         new web3.PublicKey(this.state.recipientPublicKey),
-        this.state.recipientAmount,
-      );
-      const signature = await this.web3sol.sendTransaction(
-        transaction,
-        this.web3solAccount,
+        amount,
       );
 
-      await this.web3sol.confirmTransaction(signature);
-      this.setState({
-        balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
-      });
+      let signature = '';
+      try {
+        signature = await web3.sendAndConfirmTransaction(
+          this.web3sol,
+          transaction,
+          this.web3solAccount,
+        );
+      } catch (err) {
+        // Transaction failed but fees were still taken
+        this.setState({ balance: await this.web3sol.getBalance(this.web3solAccount.publicKey) });
+        throw err;
+      }
+
+      if (this.state.requestMode) {
+        window.opener.postMessage({
+          method: 'addFundsResponse',
+          params: { signature, amount },
+        }, this.state.requesterOrigin);
+      }
+
+      if (closeOnSuccess) {
+        window.close();
+      } else {
+        this.setState({ balance: await this.web3sol.getBalance(this.web3solAccount.publicKey) });
+      }
     });
   }
 
@@ -365,13 +442,17 @@ export class Wallet extends React.Component {
     });
   }
 
+  sendDisabled() {
+    return this.state.recipientPublicKey === null ||
+      this.state.recipientAmount === null;
+  }
+
   render() {
     if (!this.web3solAccount) {
       return (
         <Account store={this.props.store} />
       );
     }
-
 
     const copyTooltip = (
       <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
@@ -397,10 +478,6 @@ export class Wallet extends React.Component {
       />
     ) : null;
 
-    const sendDisabled =
-      this.state.recipientPublicKey === null ||
-      this.state.recipientAmount === null;
-    const confirmDisabled = this.state.confirmationSignature === null;
     const airdropDisabled = this.state.balance >= 1000;
 
     return (
@@ -447,6 +524,7 @@ export class Wallet extends React.Component {
           </OverlayTrigger>
           <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
             <Button
+              className="margin-left"
               disabled={airdropDisabled}
               onClick={() => this.requestAirdrop()}
             >
@@ -454,53 +532,100 @@ export class Wallet extends React.Component {
             </Button>
           </OverlayTrigger>
         </Well>
-        <p />
-        <Panel>
-          <Panel.Heading>Send Tokens</Panel.Heading>
-          <Panel.Body>
-            <PublicKeyInput
-              onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
-            />
-            <TokenInput onAmount={amount => this.setRecipientAmount(amount)} />
-            <div className="text-center">
-              <Button
-                disabled={sendDisabled}
-                onClick={() => this.sendTransaction()}
-              >
-                Send
-              </Button>
-            </div>
-          </Panel.Body>
-        </Panel>
-        <p />
-        <Panel>
-          <Panel.Heading>Confirm Transaction</Panel.Heading>
-          <Panel.Body>
-            <SignatureInput
-              onSignature={signature =>
-                this.setConfirmationSignature(signature)
-              }
-            />
-            <div className="text-center">
-              <Button
-                disabled={confirmDisabled}
-                onClick={() => this.confirmTransaction()}
-              >
-                Confirm
-              </Button>
-            </div>
-            {typeof this.state.transactionConfirmed === 'boolean' ? (
-              <b>
-                {this.state.transactionConfirmed
-                  ? 'CONFIRMED'
-                  : 'NOT CONFIRMED'}
-              </b>
-            ) : (
-              ''
-            )}
-          </Panel.Body>
-        </Panel>
+        {this.renderPanels()}
       </div>
+    );
+  }
+
+  renderPanels() {
+    if (this.state.requestMode) {
+      return this.renderTokenRequestPanel();
+    } else {
+      return (
+        <React.Fragment>
+          {this.renderSendTokensPanel()}
+          {this.renderConfirmTxPanel()}
+        </React.Fragment>
+      );
+    }
+  }
+
+  renderTokenRequestPanel() {
+    return (
+      <Panel>
+        <Panel.Heading>Token Request</Panel.Heading>
+        <Panel.Body>
+          <PublicKeyInput
+            key={this.state.requestedPublicKey}
+            defaultValue={this.state.requestedPublicKey || ''}
+            onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
+          />
+          <TokenInput
+            key={this.state.requestedAmount + this.state.balance}
+            maxValue={this.state.balance}
+            defaultValue={this.state.requestedAmount || ''}
+            onAmount={amount => this.setRecipientAmount(amount)} />
+          <div className="text-center">
+            <Button disabled={this.sendDisabled()} onClick={() => this.sendTransaction(false)}>
+              Send
+            </Button>
+            <Button
+              bsStyle="success"
+              className="margin-left"
+              disabled={this.sendDisabled()}
+              onClick={() => this.sendTransaction(true)}>
+                Send & Close
+            </Button>
+          </div>
+        </Panel.Body>
+      </Panel>
+    );
+  }
+
+  renderSendTokensPanel() {
+    return (
+      <Panel>
+        <Panel.Heading>Send Tokens</Panel.Heading>
+        <Panel.Body>
+          <PublicKeyInput onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)} />
+          <TokenInput
+            key={this.state.balance}
+            defaultValue={this.state.recipientAmount}
+            maxValue={this.state.balance}
+            onAmount={amount => this.setRecipientAmount(amount)} />
+          <div className="text-center">
+            <Button disabled={this.sendDisabled()} onClick={() => this.sendTransaction(false)}>
+              Send
+            </Button>
+          </div>
+        </Panel.Body>
+      </Panel>
+    );
+  }
+
+  renderConfirmTxPanel() {
+    const confirmDisabled = this.state.confirmationSignature === null;
+    return (
+      <Panel>
+        <Panel.Heading>Confirm Transaction</Panel.Heading>
+        <Panel.Body>
+          <SignatureInput onSignature={signature => this.setConfirmationSignature(signature)} />
+          <div className="text-center">
+            <Button disabled={confirmDisabled} onClick={() => this.confirmTransaction()} >
+              Confirm
+            </Button>
+          </div>
+          {typeof this.state.transactionConfirmed === 'boolean' ? (
+            <b>
+              {this.state.transactionConfirmed
+                ? 'CONFIRMED'
+                : 'NOT CONFIRMED'}
+            </b>
+          ) : (
+            ''
+          )}
+        </Panel.Body>
+      </Panel>
     );
   }
 }
