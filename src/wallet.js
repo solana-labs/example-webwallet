@@ -401,7 +401,7 @@ export class Wallet extends React.Component {
       this.state.recipientPublicKey === null ||
       this.state.recipientAmount === null;
     const confirmDisabled = this.state.confirmationSignature === null;
-    const airdropDisabled = this.state.balance !== 0;
+    const airdropDisabled = this.state.balance >= 1000;
 
     return (
       <div>
