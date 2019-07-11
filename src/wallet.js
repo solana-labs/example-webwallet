@@ -417,6 +417,13 @@ export class Wallet extends React.Component {
         this.setState({
           balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
         });
+        window.opener.postMessage(
+          {
+            method: 'addFundsResponse',
+            params: {err: true},
+          },
+          this.state.requesterOrigin,
+        );
         throw err;
       }
 
