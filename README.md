@@ -35,51 +35,51 @@ If this wallet is opened by a dApp, it will accept requests for funds. In order 
 request funds from your dApp, follow these steps:
 
 1. Attach a message event listener to the dApp window
-    ```js
-    window.addEventListener('message', (e) => { /* ... */ });
-    ```
-1. Open the wallet url in a window from the dApp
-    ```js
-    const walletWindow = window.open(WALLET_URL, 'wallet', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=500, height=600');
-    ```
-1. Wait for the wallet to load, it will post a `'ready'` message when it's ready to handle requests
-    ```js
-    window.addEventListener('message', (e) => {
-      if (e.data) {
-        switch (e.data.method) {
-          case 'ready': {
-            // ...
-            break;
-          }
-        }
+```js
+window.addEventListener('message', (e) => { /* ... */ });
+```
+2. Open the wallet url in a window from the dApp
+```js
+const walletWindow = window.open(WALLET_URL, 'wallet', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=500, height=600');
+```
+3. Wait for the wallet to load, it will post a `'ready'` message when it's ready to handle requests
+```js
+window.addEventListener('message', (e) => {
+  if (e.data) {
+    switch (e.data.method) {
+      case 'ready': {
+        // ...
+        break;
       }
-    });
-    ```
-1. Send an `'addFunds'` request
-    ```js
-    walletWindow.postMessage({
-      method: 'addFunds',
-      params: {
-        pubkey: /* ... */,
-        amount: /* ... */,
-        network: /* ... */,
-      },
-    }, WALLET_URL);
-    ```
-1. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature
-    ```js
-    window.addEventListener('message', (e) => {
+    }
+  }
+});
+```
+4. Send an `'addFunds'` request
+```js
+walletWindow.postMessage({
+  method: 'addFunds',
+  params: {
+    pubkey: /* ... */,
+    amount: /* ... */,
+    network: /* ... */,
+  },
+}, WALLET_URL);
+```
+5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature
+```js
+window.addEventListener('message', (e) => {
+  // ...
+  switch (e.data.method) {
+    case 'ready': {
       // ...
-      switch (e.data.method) {
-        case 'ready': {
-          // ...
-          break;
-        }
-        case 'addFundsResponse': {
-          const {amount, signature} = e.data.params;
-          // ...
-          break;
-        }
-      }
-    });
-    ```
+      break;
+    }
+    case 'addFundsResponse': {
+      const {amount, signature} = e.data.params;
+      // ...
+      break;
+    }
+  }
+});
+```
