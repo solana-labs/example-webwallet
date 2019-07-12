@@ -60,9 +60,9 @@ window.addEventListener('message', (e) => {
 walletWindow.postMessage({
   method: 'addFunds',
   params: {
-    pubkey: /* ... */,
-    amount: /* ... */,
-    network: /* ... */,
+    pubkey: '7q4tpevKWZFSXszPfnvWDuuE19EhSnsAmt5x4MqCyyVb',
+    amount: 150,
+    network: 'https://api.beta.testnet.solana.com',
   },
 }, WALLET_URL);
 ```
