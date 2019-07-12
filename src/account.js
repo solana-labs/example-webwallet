@@ -103,7 +103,8 @@ export class Account extends React.Component {
             Enter a valid seed phrase to recover a wallet
           </ControlLabel>
           <FormControl
-            type="text"
+            type="password"
+            autoComplete="current-password"
             value={this.state.recoveredPhrase}
             placeholder="Enter seed phrase"
             onChange={e => this.onRecoverPhraseChange(e)}
@@ -141,10 +142,11 @@ export class Account extends React.Component {
               </OverlayTrigger>
             </InputGroup.Button>
             <FormControl
-              readOnly
-              type="text"
+              type="password"
+              autoComplete="new-password"
               size="21"
               value={this.state.generatedPhrase}
+              onChange={() => { return false; }}
             />
             <InputGroup.Button>
               <OverlayTrigger placement="bottom" overlay={copyTooltip}>
@@ -158,7 +160,7 @@ export class Account extends React.Component {
         <hr />
         <p>
           <b>WARNING:</b> The seed phrase will not be shown again, copy it down
-          to recover this wallet in the future.
+          or save in your password manager to recover this wallet in the future.
         </p>
         <Button bsStyle="primary" onClick={() => this.createAccount()}>
           Create Account
