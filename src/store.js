@@ -21,7 +21,7 @@ export class Store {
     }
 
     if (typeof this.networkEntryPoint !== 'string') {
-      this.networkEntryPoint = web3.testnetChannelEndpoint();
+      this.networkEntryPoint = web3.testnetChannelEndpoint(process.env.CHANNEL);
     }
 
     this._ee.emit('change');
