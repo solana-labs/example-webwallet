@@ -13,35 +13,44 @@ import PropTypes from 'prop-types';
 import * as web3 from '@solana/web3.js';
 
 export class Settings extends React.Component {
-  forceUpdate = () => {
-    super.forceUpdate();
-    this.checkNetwork();
-  };
 
-  state = {
-    validationState: null,
-    validationHelpBlock: null,
-    checkNetworkCount: 0,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      validationState: null,
+      validationHelpBlock: null,
+      checkNetworkCount: 0,
+      networkEntryPoint: '',
+    };
+
+    this.onStoreChange = this.onStoreChange.bind(this);
+  }
 
   componentDidMount() {
-    this.props.store.onChange(this.forceUpdate);
-    this.checkNetwork();
+    this.props.store.onChange(this.onStoreChange);
+    this.onStoreChange();
   }
 
   componentWillUnmount() {
-    this.props.store.removeChangeListener(this.forceUpdate);
+    this.props.store.removeChangeListener(this.onStoreChange);
+  }
+
+  onStoreChange() {
+    this.setState({
+      networkEntryPoint: this.props.store.networkEntryPoint,
+    }, this.checkNetwork);
   }
 
   setNetworkEntryPoint(url) {
-    console.log('update', url);
-    this.props.store.setNetworkEntryPoint(url);
+    this.setState({networkEntryPoint: url}, this.checkNetwork);
   }
 
   async checkNetwork() {
-    console.log('Checking network:', this.props.store.networkEntryPoint);
+    if (!this.state.networkEntryPoint) return;
+    console.log('Checking network:', this.state.networkEntryPoint);
 
-    const connection = new web3.Connection(this.props.store.networkEntryPoint);
+    const connection = new web3.Connection(this.state.networkEntryPoint);
 
     const checkNetworkCount = this.state.checkNetworkCount + 1;
     this.setState({
@@ -56,6 +65,7 @@ export class Settings extends React.Component {
       ] = await connection.getRecentBlockhash();
       console.log('blockhash:', blockhash);
       if (this.state.checkNetworkCount <= checkNetworkCount) {
+        this.props.store.setNetworkEntryPoint(this.state.networkEntryPoint);
         this.setState({
           validationState: 'success',
           validationHelpBlock: 'Connected',
@@ -92,7 +102,7 @@ export class Settings extends React.Component {
                   title="Network"
                   onSelect={::this.setNetworkEntryPoint}
                 >
-                  {[web3.testnetChannelEndpoint(), 'http://localhost:8899'].map(
+                  {[web3.testnetChannelEndpoint(process.env.CHANNEL), 'http://localhost:8899'].map(
                     (url, index) => (
                       <MenuItem key={index} eventKey={url}>
                         {url}
@@ -102,7 +112,7 @@ export class Settings extends React.Component {
                 </DropdownButton>
                 <FormControl
                   type="text"
-                  value={this.props.store.networkEntryPoint}
+                  value={this.state.networkEntryPoint}
                   placeholder="Enter the URI of the network"
                   onChange={e => this.setNetworkEntryPoint(e.target.value)}
                 />

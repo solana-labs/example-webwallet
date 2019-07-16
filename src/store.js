@@ -42,9 +42,11 @@ export class Store {
   }
 
   async setNetworkEntryPoint(value) {
-    this.networkEntryPoint = value;
-    this._ee.emit('change');
-    await this._lf.setItem('networkEntryPoint', value);
+    if (value !== this.networkEntryPoint) {
+      this.networkEntryPoint = value;
+      this._ee.emit('change');
+      await this._lf.setItem('networkEntryPoint', value);
+    }
   }
 
   onChange(fn) {
