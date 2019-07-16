@@ -178,24 +178,24 @@ SignatureInput.propTypes = {
   onSignature: PropTypes.func,
 };
 
-class DismissibleErrors extends React.Component {
+class DismissibleMessages extends React.Component {
   render() {
-    const errs = this.props.errors.map((err, index) => {
+    const messages = this.props.messages.map(([msg, style], index) => {
       return (
-        <Alert key={index} bsStyle="danger">
+        <Alert key={index} bsStyle={style}>
           <a href="#" onClick={() => this.props.onDismiss(index)}>
             <Glyphicon glyph="remove-sign" />
           </a>{' '}
           &nbsp;
-          {err}
+          {msg}
         </Alert>
       );
     });
-    return <div>{errs}</div>;
+    return <div>{messages}</div>;
   }
 }
-DismissibleErrors.propTypes = {
-  errors: PropTypes.array,
+DismissibleMessages.propTypes = {
+  messages: PropTypes.array,
   onDismiss: PropTypes.func,
 };
 
@@ -255,7 +255,7 @@ SettingsModal.propTypes = {
 
 export class Wallet extends React.Component {
   state = {
-    errors: [],
+    messages: [],
     busyModal: null,
     settingsModal: false,
     balance: 0,
@@ -285,16 +285,28 @@ export class Wallet extends React.Component {
     this.setState({recipientAmount});
   }
 
-  dismissError(index) {
-    const {errors} = this.state;
-    errors.splice(index, 1);
-    this.setState({errors});
+  dismissMessage(index) {
+    const {messages} = this.state;
+    messages.splice(index, 1);
+    this.setState({messages});
   }
 
   addError(message) {
-    const {errors} = this.state;
-    errors.push(message);
-    this.setState({errors});
+    this.addMessage(message, 'danger');
+  }
+
+  addWarning(message) {
+    this.addMessage(message, 'warning');
+  }
+
+  addInfo(message) {
+    this.addMessage(message, 'info');
+  }
+
+  addMessage(message, type) {
+    const {messages} = this.state;
+    messages.push([message, type]);
+    this.setState({messages});
   }
 
   async runModal(title, text, f) {
@@ -499,9 +511,9 @@ export class Wallet extends React.Component {
         </div>
         {busyModal}
         {settingsModal}
-        <DismissibleErrors
-          errors={this.state.errors}
-          onDismiss={index => this.dismissError(index)}
+        <DismissibleMessages
+          messages={this.state.messages}
+          onDismiss={index => this.dismissMessage(index)}
         />
         <Well>
           <FormGroup>
