@@ -259,6 +259,7 @@ export class Wallet extends React.Component {
     busyModal: null,
     settingsModal: false,
     balance: 0,
+    account: null,
     requestMode: false,
     requesterOrigin: '*',
     requestPending: false,
@@ -325,13 +326,12 @@ export class Wallet extends React.Component {
   }
 
   onStoreChange = () => {
-    if (this.props.store.accountSecretKey) {
-      this.web3solAccount = new web3.Account(this.props.store.accountSecretKey);
-    } else {
-      this.web3solAccount = null;
-    }
     this.web3sol = new web3.Connection(this.props.store.networkEntryPoint);
-    this.forceUpdate();
+    let account = null;
+    if (this.props.store.accountSecretKey) {
+      account = new web3.Account(this.props.store.accountSecretKey);
+    }
+    this.setState({account}, this.refreshBalance);
   };
 
   onAddFunds(params, origin) {
@@ -380,7 +380,6 @@ export class Wallet extends React.Component {
   componentDidMount() {
     this.props.store.onChange(this.onStoreChange);
     this.onStoreChange();
-    this.refreshBalance();
     if (window.opener) {
       this.onWindowOpen();
     }
@@ -391,14 +390,14 @@ export class Wallet extends React.Component {
   }
 
   copyPublicKey() {
-    copy(this.web3solAccount.publicKey);
+    copy(this.state.account.publicKey);
   }
 
   refreshBalance() {
-    if (this.web3solAccount) {
+    if (this.state.account) {
       this.runModal('Updating Account Balance', 'Please wait...', async () => {
         this.setState({
-          balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
         });
       });
     }
@@ -406,9 +405,9 @@ export class Wallet extends React.Component {
 
   requestAirdrop() {
     this.runModal('Requesting Airdrop', 'Please wait...', async () => {
-      await this.web3sol.requestAirdrop(this.web3solAccount.publicKey, 1000);
+      await this.web3sol.requestAirdrop(this.state.account.publicKey, 1000);
       this.setState({
-        balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+        balance: await this.web3sol.getBalance(this.state.account.publicKey),
       });
     });
   }
@@ -418,7 +417,7 @@ export class Wallet extends React.Component {
       const amount = this.state.recipientAmount;
       this.setState({requestedAmount: 0, requestPending: false});
       const transaction = web3.SystemProgram.transfer(
-        this.web3solAccount.publicKey,
+        this.state.account.publicKey,
         new web3.PublicKey(this.state.recipientPublicKey),
         amount,
       );
@@ -428,12 +427,12 @@ export class Wallet extends React.Component {
         signature = await web3.sendAndConfirmTransaction(
           this.web3sol,
           transaction,
-          this.web3solAccount,
+          this.state.account,
         );
       } catch (err) {
         // Transaction failed but fees were still taken
         this.setState({
-          balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
         });
         this.postWindowMessage('addFundsResponse', {err: true});
         throw err;
@@ -444,7 +443,7 @@ export class Wallet extends React.Component {
         window.close();
       } else {
         this.setState({
-          balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
         });
       }
     });
@@ -469,7 +468,7 @@ export class Wallet extends React.Component {
   }
 
   render() {
-    if (!this.web3solAccount) {
+    if (!this.state.account) {
       return <Account store={this.props.store} />;
     }
 
@@ -523,7 +522,7 @@ export class Wallet extends React.Component {
                 readOnly
                 type="text"
                 size="21"
-                value={this.web3solAccount.publicKey}
+                value={this.state.account.publicKey}
               />
               <InputGroup.Button>
                 <OverlayTrigger placement="bottom" overlay={copyTooltip}>
