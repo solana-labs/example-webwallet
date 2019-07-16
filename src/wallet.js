@@ -260,7 +260,7 @@ export class Wallet extends React.Component {
     settingsModal: false,
     balance: 0,
     requestMode: false,
-    requesterOrigin: '',
+    requesterOrigin: '*',
     requestPending: false,
     requestedPublicKey: '',
     requestedAmount: 0,
@@ -344,6 +344,12 @@ export class Wallet extends React.Component {
     }
   }
 
+  postWindowMessage(method, params) {
+    if (window.opener) {
+      window.opener.postMessage({method, params}, this.state.requesterOrigin);
+    }
+  }
+
   onWindowOpen() {
     this.setState({requestMode: true});
     window.addEventListener('message', e => {
@@ -356,7 +362,7 @@ export class Wallet extends React.Component {
       }
     });
 
-    window.opener.postMessage({method: 'ready'}, '*');
+    this.postWindowMessage('ready');
   }
 
   componentDidMount() {
@@ -417,26 +423,11 @@ export class Wallet extends React.Component {
         this.setState({
           balance: await this.web3sol.getBalance(this.web3solAccount.publicKey),
         });
-        window.opener.postMessage(
-          {
-            method: 'addFundsResponse',
-            params: {err: true},
-          },
-          this.state.requesterOrigin,
-        );
+        this.postWindowMessage('addFundsResponse', {err: true});
         throw err;
       }
 
-      if (this.state.requestMode) {
-        window.opener.postMessage(
-          {
-            method: 'addFundsResponse',
-            params: {signature, amount},
-          },
-          this.state.requesterOrigin,
-        );
-      }
-
+      this.postWindowMessage('addFundsResponse', {signature, amount});
       if (closeOnSuccess) {
         window.close();
       } else {
