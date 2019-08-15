@@ -1,0 +1,60 @@
+.app-btn {
+  border: 1px solid $primary;
+  padding: 7px;
+  border-radius: 0;
+  display: inline-block;
+  min-width: 180px;
+  button {
+    height: 38px;
+    padding: 0 15px;
+    background-color: $primary;
+    color: $black;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border: none;
+    width: 100%;
+  }
+}
+
+.sl-toggle {
+  text-transform: uppercase;
+  color: $primary;
+  letter-spacing: 2.5px;
+  font-size: 15px;
+  font-weight: bold;
+  height: 55px;
+  border: 1px solid $primary;
+  border-radius: 0;
+  background-color: $black;
+  &:active,
+  &:active:hover,
+  &:hover {
+    background-color: $black;
+    border-color: $primary;
+    color: $primary;
+  }
+  &.active {
+    background-color: $primary;
+    color: $black;
+    &:active,
+    &:active:hover,
+    &:hover {
+      color: $black;
+      border-color: $primary;
+      background-color: $primary;
+    }
+  }
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+}
+@media (max-width: 768px) {
+  .sl-toggle {
+    white-space: normal;
+    font-size: 12px;
+  }
+}

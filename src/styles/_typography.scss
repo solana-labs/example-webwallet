@@ -1,0 +1,51 @@
+.control-label-sl {
+  text-transform: uppercase;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: $light-grey;
+}
+
+.text {
+  font-size: 15px;
+  line-height: 26px;
+  letter-spacing: .5px;
+  &.lg {
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 29px;
+  }
+}
+
+h2 {
+  font-size: 23px;
+  font-weight: bold;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  line-height: 31px;
+}
+
+h4 {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: $light-grey;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+h5 {
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #c4c4c4;
+  margin-bottom: 25px;
+}
+@media (max-width: 768px) {
+  .text.lg {
+    font-size: 15px;
+    line-height: 26px;
+  }
+  h2 {
+    letter-spacing: .5px;
+  }
+}

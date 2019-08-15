@@ -1,11 +1,10 @@
 import React from 'react';
 import {
-  Button,
+  Button as BaseButton,
   ControlLabel,
   FormControl,
   FormGroup,
   HelpBlock,
-  Glyphicon,
   InputGroup,
   OverlayTrigger,
   ToggleButton,
@@ -16,6 +15,10 @@ import {
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import * as bip39 from 'bip39';
+
+import FileCopyIcon from './icons/file-copy.svg';
+import EyeIcon from './icons/eye.svg';
+import Button from './components/Button';
 
 const GENERATE_WALLET_MODE = 1;
 const RECOVER_WALLET_MODE = 2;
@@ -66,33 +69,37 @@ export class Account extends React.Component {
 
   render() {
     return (
-      <Well>
-        <h2>Account Setup</h2>
-        <p>
-          A locally cached wallet account was not found. Generate a new one or
-          recover an existing wallet from its seed phrase.
-        </p>
-        <hr />
-        <FormGroup>
-          <ToggleButtonGroup
-            name="options"
-            value={this.state.walletMode}
-            onChange={mode => this.onModeChange(mode)}
-            justified
-          >
-            <ToggleButton value={GENERATE_WALLET_MODE}>
-              Generate New Wallet
-            </ToggleButton>
-            <ToggleButton value={RECOVER_WALLET_MODE}>
-              Recover Existing Wallet
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </FormGroup>
-        {this.state.walletMode === GENERATE_WALLET_MODE &&
-          this.renderGenerateWalletMode()}
-        {this.state.walletMode === RECOVER_WALLET_MODE &&
-          this.renderRecoverWalletMode()}
-      </Well>
+      <React.Fragment>
+        <div className="container">
+          <h2 className="decor">Account Setup</h2>
+          <hr />
+          <p className="text lg setup-desc">
+            A locally cached wallet account was not found. Generate a new one or
+            recover an existing wallet from its seed phrase.
+          </p>
+          <div className="setup-switch">
+            <ToggleButtonGroup
+              name="options"
+              value={this.state.walletMode}
+              onChange={mode => this.onModeChange(mode)}
+              justified
+            >
+              <ToggleButton className="sl-toggle" value={GENERATE_WALLET_MODE}>
+                Generate New Wallet
+              </ToggleButton>
+              <ToggleButton className="sl-toggle" value={RECOVER_WALLET_MODE}>
+                Recover Existing Wallet
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+          <Well bsStyle="well">
+            {this.state.walletMode === GENERATE_WALLET_MODE &&
+              this.renderGenerateWalletMode()}
+            {this.state.walletMode === RECOVER_WALLET_MODE &&
+              this.renderRecoverWalletMode()}
+          </Well>
+        </div>
+      </React.Fragment>
     );
   }
 
@@ -109,23 +116,19 @@ export class Account extends React.Component {
   }
 
   renderRevealToggle() {
-    let glyph = 'eye-close';
     let toggleText = 'Reveal';
     if (this.state.revealSeedPhrase) {
-      glyph = 'eye-open';
       toggleText = 'Hide';
     }
 
-    const revealTooltip = (
-      <Tooltip id="reveal">{toggleText}</Tooltip>
-    );
+    const revealTooltip = <Tooltip id="reveal">{toggleText}</Tooltip>;
 
     return (
       <InputGroup.Button>
         <OverlayTrigger placement="bottom" overlay={revealTooltip}>
-          <Button onClick={() => this.toggleReveal()}>
-            <Glyphicon glyph={glyph} />
-          </Button>
+          <BaseButton onClick={() => this.toggleReveal()}>
+            <EyeIcon />
+          </BaseButton>
         </OverlayTrigger>
       </InputGroup.Button>
     );
@@ -135,10 +138,10 @@ export class Account extends React.Component {
     return (
       <React.Fragment>
         <FormGroup validationState={this.validateRecoverPhrase()}>
-          <ControlLabel>
+          <ControlLabel className="setup-label">
             Enter a valid seed phrase to recover a wallet
           </ControlLabel>
-          <InputGroup>
+          <InputGroup className="sl-input">
             {this.renderRevealToggle()}
             <FormControl
               autoFocus={true}
@@ -148,14 +151,17 @@ export class Account extends React.Component {
               placeholder="Enter seed phrase"
               onChange={e => this.onRecoverPhraseChange(e)}
             />
+            <FormControl.Feedback />
           </InputGroup>
-          <FormControl.Feedback />
-          <HelpBlock>Seed phrase should be 12 words in length.</HelpBlock>
+          <HelpBlock className="text">
+            Seed phrase should be 12 words in length.
+          </HelpBlock>
         </FormGroup>
-        <hr />
-        <Button bsStyle="primary" onClick={() => this.recoverAccount()}>
-          Recover Account
-        </Button>
+        <div className="text-center-xs">
+          <Button bsStyle="primary" onClick={() => this.recoverAccount()}>
+            Recover Account
+          </Button>
+        </div>
       </React.Fragment>
     );
   }
@@ -168,8 +174,10 @@ export class Account extends React.Component {
     return (
       <React.Fragment>
         <FormGroup>
-          <ControlLabel>Generated Seed Phrase</ControlLabel>
-          <InputGroup>
+          <ControlLabel className="sl-label setup-label">
+            Generated Seed Phrase
+          </ControlLabel>
+          <InputGroup className="sl-input">
             {this.renderRevealToggle()}
             <FormControl
               autoFocus={true}
@@ -183,21 +191,21 @@ export class Account extends React.Component {
             />
             <InputGroup.Button>
               <OverlayTrigger placement="bottom" overlay={copyTooltip}>
-                <Button onClick={() => this.copyGeneratedPhrase()}>
-                  <Glyphicon glyph="copy" />
-                </Button>
+                <BaseButton onClick={() => this.copyGeneratedPhrase()}>
+                  <FileCopyIcon />
+                </BaseButton>
               </OverlayTrigger>
             </InputGroup.Button>
           </InputGroup>
         </FormGroup>
-        <hr />
-        <p>
-          <b>WARNING:</b> The seed phrase will not be shown again, copy it down
-          or save in your password manager to recover this wallet in the future.
+        <p className="text setup-warn">
+          <span className="green">WARNING:</span> The seed phrase will not be
+          shown again, copy it down or save in your password manager to recover
+          this wallet in the future.
         </p>
-        <Button bsStyle="primary" onClick={() => this.createAccount()}>
-          Create Account
-        </Button>
+        <div className="text-center-xs">
+          <Button onClick={() => this.createAccount()}>Create Account</Button>
+        </div>
       </React.Fragment>
     );
   }

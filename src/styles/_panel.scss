@@ -1,0 +1,30 @@
+.panel {
+  background-color: transparent;
+  &-default {
+    border: none;
+  }
+  .panel-heading {
+    padding: 20px 0;
+    text-transform: uppercase;
+    font-size: 23px;
+    font-weight: bold;
+    letter-spacing: 2.5px;
+    margin-bottom: 26px;
+    background-color: transparent;
+    border-bottom: 1px solid $border-color;
+    color: $light-grey;
+  }
+  .panel-body {
+    background-color: $grey;
+    padding: 30px 30px 40px;
+  }
+}
+@media (max-width: 768px) {
+  .panel {
+    .panel-body {
+      margin-left: -15px;
+      margin-right: -15px;
+      padding: 30px 15px;
+    }
+  }
+}

@@ -1,0 +1,58 @@
+.form-group {
+  position: relative;
+  &.has-success {
+    .sl-input::before {
+      border-color: $success-border;
+    }
+  }
+  &.has-error {
+    .sl-input::before {
+      border-color: $error-border;
+    }
+  }
+  .control-label {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: $light-grey;
+    margin-bottom: 25px;
+  }
+  .form-control {
+    background-color: $black;
+    border: none;
+    border-radius: 0;
+    height: 38px;
+    margin-left: 6px;
+    width: calc(100% - 12px);
+    color: $white;
+    &:focus {
+      box-shadow: none;
+    }
+  }
+  .form-control-feedback {
+    right: 5px;
+  }
+  &.has-feedback label~.form-control-feedback {
+    top: 48px;
+  }
+  .input-group {
+    background-color: $black;
+    margin: 0 6px;
+    input {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+}
+.help-block {
+  margin-top: 12px;
+}
+.has-success .form-control-feedback {
+  color: $primary;
+}
+
+.has-error .form-control-feedback {
+  color: $error;
+}
+.form-control-feedback {
+  top: 3px;
+}

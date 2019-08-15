@@ -1,0 +1,53 @@
+.dropdown-toggle {
+  background-color: $black;
+  border-radius: 0;
+  border-color: $primary;
+  margin-right: 0 !important;
+  color: $primary;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  &:hover {
+    background-color: $black;
+    color: $primary;
+    border-color: $primary;
+  }
+}
+.dropdown {
+  &.active > .dropdown-toggle,
+  &.open > .dropdown-toggle,
+  &.open > .dropdown-toggle.focus,
+  &.open > .dropdown-toggle:focus,
+  &.open > .dropdown-toggle:hover,
+  .dropdown-toggle:focus,
+  .dropdown-toggle:active,
+  .dropdown-toggle:active.focus,
+  .dropdown-toggle:active:focus {
+    background-color: $black;
+    color: $primary;
+    border-color: $primary;
+  }
+}
+
+.dropdown-menu {
+  background-color: $black;
+  border-radius: 0;
+  border-color: $primary;
+  padding: 0;
+  & > li > a {
+    color: $primary;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 2.5;
+    &:hover {
+      color: $black;
+      background-color: $primary;
+    }
+  }
+}
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:focus,
+.dropdown-menu > .active > a:hover {
+  background-color: $primary;
+  color: $black;
+}

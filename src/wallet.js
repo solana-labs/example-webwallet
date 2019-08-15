@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Alert,
-  Button,
   ControlLabel,
   FormControl,
   FormGroup,
@@ -11,14 +10,22 @@ import {
   Modal,
   OverlayTrigger,
   Panel,
-  ProgressBar,
   Tooltip,
   Well,
+  Grid,
+  Row,
+  Col,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import * as web3 from '@solana/web3.js';
 
+import Loader from './components/Loader';
+import RefreshIcon from './icons/refresh.svg';
+import SendIcon from './icons/send.svg';
+import FileCopyIcon from './icons/file-copy.svg';
+import GearIcon from './icons/gear.svg';
+import Button from './components/Button';
 import {Account} from './account';
 import {Settings} from './settings';
 
@@ -75,14 +82,16 @@ class PublicKeyInput extends React.Component {
       <form>
         <FormGroup validationState={this.state.validationState}>
           <ControlLabel>Recipient&apos;s Public Key</ControlLabel>
-          <FormControl
-            type="text"
-            value={this.state.value}
-            placeholder="Enter the public key of the recipient"
-            onChange={e => this.handleChange(e.target.value)}
-          />
+          <InputGroup className="sl-input">
+            <FormControl
+              type="text"
+              value={this.state.value}
+              placeholder="Enter the public key of the recipient"
+              onChange={e => this.handleChange(e.target.value)}
+            />
+            <FormControl.Feedback />
+          </InputGroup>
           <HelpBlock>{this.identityText()}</HelpBlock>
-          <FormControl.Feedback />
         </FormGroup>
       </form>
     );
@@ -129,14 +138,16 @@ class TokenInput extends React.Component {
       <form>
         <FormGroup validationState={this.state.validationState}>
           <ControlLabel>Amount</ControlLabel>
-          <FormControl
-            type="text"
-            value={this.state.value}
-            placeholder="Enter amount to transfer"
-            onChange={e => this.handleChange(e.target.value)}
-          />
+          <InputGroup className="sl-input">
+            <FormControl
+              type="text"
+              value={this.state.value}
+              placeholder="Enter amount to transfer"
+              onChange={e => this.handleChange(e.target.value)}
+            />
+            <FormControl.Feedback />
+          </InputGroup>
           <HelpBlock>{this.state.help}</HelpBlock>
-          <FormControl.Feedback />
         </FormGroup>
       </form>
     );
@@ -181,13 +192,15 @@ class SignatureInput extends React.Component {
       <form>
         <FormGroup validationState={this.state.validationState}>
           <ControlLabel>Signature</ControlLabel>
-          <FormControl
-            type="text"
-            value={this.state.value}
-            placeholder="Enter a transaction signature"
-            onChange={e => this.handleChange(e)}
-          />
-          <FormControl.Feedback />
+          <InputGroup className="sl-input">
+            <FormControl
+              type="text"
+              value={this.state.value}
+              placeholder="Enter a transaction signature"
+              onChange={e => this.handleChange(e)}
+            />
+            <FormControl.Feedback />
+          </InputGroup>
         </FormGroup>
       </form>
     );
@@ -224,10 +237,14 @@ class BusyModal extends React.Component {
       <Modal
         {...this.props}
         bsSize="small"
+        className="sl-modal sl-modal-light"
         aria-labelledby="contained-modal-title-sm"
       >
         <Modal.Header>
-          <Modal.Title id="contained-modal-title-sm">
+          <Modal.Title
+            className="sl-modal-title-light"
+            id="contained-modal-title-sm"
+          >
             {this.props.title}
           </Modal.Title>
         </Modal.Header>
@@ -235,7 +252,7 @@ class BusyModal extends React.Component {
           {this.props.text}
           <br />
           <br />
-          <ProgressBar active now={100} />
+          <Loader />
         </Modal.Body>
       </Modal>
     );
@@ -251,18 +268,18 @@ class SettingsModal extends React.Component {
     return (
       <Modal
         {...this.props}
+        className="sl-modal"
         bsSize="large"
         aria-labelledby="contained-modal-title-lg"
       >
         <Modal.Header closeButton>
-          <Modal.Title id="contained-modal-title-lg">Settings</Modal.Title>
+          <Modal.Title className="modal-sl-title" id="contained-modal-title-lg">
+            Settings
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Settings store={this.props.store} onHide={this.props.onHide} />
         </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={this.props.onHide}>Close</Button>
-        </Modal.Footer>
       </Modal>
     );
   }
@@ -549,56 +566,82 @@ export class Wallet extends React.Component {
 
     return (
       <div>
-        <div style={{width: '100%', textAlign: 'right'}}>
-          <Button onClick={() => this.setState({settingsModal: true})}>
-            <Glyphicon
-              style={{backgroundColor: 'white'}}
-              glyph="menu-hamburger"
-            />
-          </Button>
-        </div>
         {busyModal}
         {settingsModal}
         <DismissibleMessages
           messages={this.state.messages}
           onDismiss={index => this.dismissMessage(index)}
         />
-        <Well>
-          <FormGroup>
-            <ControlLabel>Account Public Key</ControlLabel>
-            <InputGroup>
-              <FormControl
-                readOnly
-                type="text"
-                size="21"
-                value={this.state.account.publicKey}
-              />
-              <InputGroup.Button>
-                <OverlayTrigger placement="bottom" overlay={copyTooltip}>
-                  <Button onClick={() => this.copyPublicKey()}>
-                    <Glyphicon glyph="copy" />
-                  </Button>
-                </OverlayTrigger>
-              </InputGroup.Button>
-            </InputGroup>
-          </FormGroup>
-          <p />
-          Account Balance: {this.state.balance} &nbsp;
-          <OverlayTrigger placement="top" overlay={refreshBalanceTooltip}>
-            <Button onClick={() => this.refreshBalance()}>
-              <Glyphicon glyph="refresh" />
-            </Button>
-          </OverlayTrigger>
-          <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
-            <Button
-              className="margin-left"
-              disabled={airdropDisabled}
-              onClick={() => this.requestAirdrop()}
-            >
-              <Glyphicon glyph="send" />
-            </Button>
-          </OverlayTrigger>
-        </Well>
+        <Grid>
+          <Row>
+            <Col xs={12}>
+              <div className="account-header">
+                <h2 className="decor">account information</h2>
+                <button onClick={() => this.setState({settingsModal: true})}>
+                  <span>
+                    <GearIcon /> <span>Settings</span>
+                  </span>
+                </button>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} md={5}>
+              <Well>
+                <h4>Account Balance</h4>
+                <div className="balance">
+                  <div className="balance-val">{this.state.balance}</div>
+                  <div className="balance-ttl">Sols</div>
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={refreshBalanceTooltip}
+                  >
+                    <button
+                      className="icon-btn"
+                      onClick={() => this.refreshBalance()}
+                    >
+                      <RefreshIcon />
+                    </button>
+                  </OverlayTrigger>
+                  <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
+                    <button
+                      className="icon-btn"
+                      disabled={airdropDisabled}
+                      onClick={() => this.requestAirdrop()}
+                    >
+                      <SendIcon />
+                    </button>
+                  </OverlayTrigger>
+                </div>
+              </Well>
+            </Col>
+            <Col xs={12} md={7}>
+              <Well>
+                <FormGroup>
+                  <ControlLabel>Account Public Key</ControlLabel>
+                  <InputGroup className="sl-input">
+                    <FormControl
+                      readOnly
+                      type="text"
+                      size="21"
+                      value={this.state.account.publicKey}
+                    />
+                    <InputGroup.Button>
+                      <OverlayTrigger placement="bottom" overlay={copyTooltip}>
+                        <button
+                          className="icon-btn"
+                          onClick={() => this.copyPublicKey()}
+                        >
+                          <FileCopyIcon />
+                        </button>
+                      </OverlayTrigger>
+                    </InputGroup.Button>
+                  </InputGroup>
+                </FormGroup>
+              </Well>
+            </Col>
+          </Row>
+        </Grid>
         {this.renderPanels()}
       </div>
     );
@@ -609,10 +652,10 @@ export class Wallet extends React.Component {
       return this.renderTokenRequestPanel();
     } else {
       return (
-        <React.Fragment>
+        <div className="container">
           {this.renderSendTokensPanel()}
           {this.renderConfirmTxPanel()}
-        </React.Fragment>
+        </div>
       );
     }
   }
@@ -634,7 +677,7 @@ export class Wallet extends React.Component {
             defaultValue={this.state.requestedAmount}
             onAmount={amount => this.setRecipientAmount(amount)}
           />
-          <div className="text-center">
+          <div>
             <Button
               disabled={this.sendDisabled()}
               onClick={() => this.sendTransaction(false)}
@@ -660,24 +703,38 @@ export class Wallet extends React.Component {
       <Panel>
         <Panel.Heading>Send Tokens</Panel.Heading>
         <Panel.Body>
-          <PublicKeyInput
-            onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
-            identity={this.state.recipientIdentity}
-          />
-          <TokenInput
-            key={this.state.balance}
-            defaultValue={this.state.recipientAmount}
-            maxValue={this.state.balance}
-            onAmount={amount => this.setRecipientAmount(amount)}
-          />
-          <div className="text-center">
-            <Button
-              disabled={this.sendDisabled()}
-              onClick={() => this.sendTransaction(false)}
-            >
-              Send
-            </Button>
-          </div>
+          <Grid fluid>
+            <Row className="show-grid">
+              <Col className="mb25-xs" xs={12} md={5}>
+                <TokenInput
+                  key={this.state.balance}
+                  defaultValue={this.state.recipientAmount}
+                  maxValue={this.state.balance}
+                  onAmount={amount => this.setRecipientAmount(amount)}
+                />
+              </Col>
+              <Col xs={12} md={7}>
+                <PublicKeyInput
+                  onPublicKey={publicKey =>
+                    this.setRecipientPublicKey(publicKey)
+                  }
+                  identity={this.state.recipientIdentity}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={8} xsOffset={2} sm={12} smOffset={0}>
+                <div className="text-center-xs mt40">
+                  <Button
+                    disabled={this.sendDisabled()}
+                    onClick={() => this.sendTransaction(false)}
+                  >
+                    Send
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </Grid>
         </Panel.Body>
       </Panel>
     );
@@ -689,24 +746,38 @@ export class Wallet extends React.Component {
       <Panel>
         <Panel.Heading>Confirm Transaction</Panel.Heading>
         <Panel.Body>
-          <SignatureInput
-            onSignature={signature => this.setConfirmationSignature(signature)}
-          />
-          <div className="text-center">
-            <Button
-              disabled={confirmDisabled}
-              onClick={() => this.confirmTransaction()}
-            >
-              Confirm
-            </Button>
-          </div>
-          {typeof this.state.transactionConfirmed === 'boolean' ? (
-            <b>
-              {this.state.transactionConfirmed ? 'CONFIRMED' : 'NOT CONFIRMED'}
-            </b>
-          ) : (
-            ''
-          )}
+          <Grid fluid>
+            <Row>
+              <Col xs={12}>
+                <SignatureInput
+                  onSignature={signature =>
+                    this.setConfirmationSignature(signature)
+                  }
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col xs={8} xsOffset={2} sm={12} smOffset={0}>
+                <div className="text-center-xs mt40">
+                  <Button
+                    disabled={confirmDisabled}
+                    onClick={() => this.confirmTransaction()}
+                  >
+                    Confirm
+                  </Button>
+                  {typeof this.state.transactionConfirmed === 'boolean' ? (
+                    <b>
+                      {this.state.transactionConfirmed
+                        ? 'CONFIRMED'
+                        : 'NOT CONFIRMED'}
+                    </b>
+                  ) : (
+                    ''
+                  )}
+                </div>
+              </Col>
+            </Row>
+          </Grid>
         </Panel.Body>
       </Panel>
     );

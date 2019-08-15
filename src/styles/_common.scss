@@ -1,0 +1,88 @@
+*:focus,
+*:active,
+*:hover {
+  outline: none !important;
+  box-shadow: none !important;
+}
+* {
+  box-sizing: border-box;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+}
+.green {
+  color: $primary;
+}
+
+hr {
+  border-color: rgba($light-grey2, 0.5);
+}
+
+.mt40 {
+  margin-top: 40px;
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 17px;
+  border-bottom: 1px solid $border-color;
+  margin-bottom: 30px;
+  button {
+    background-color: transparent;
+    border-color: $primary;
+    color: $primary;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    padding: 0 13px;
+    height: 40px;
+    span {
+      display: flex;
+      align-items: center;
+      svg {
+        margin-right: 10px;
+        width: 19px;
+        height: 21px;
+      }
+    }
+  }
+}
+
+.decor {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    left: -138px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 45px;
+    width: 99px;
+    display: block;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGMAAAAuCAYAAAA8/acnAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIoSURBVHgB7ZvNbRsxEIW52l1BN6uEDSQBusUlbAdxCZsKbHeQVJASonQgV2Cmg+QsCdpUEPkm6NePxp6MGdKgYIAw3gcIPDw98olz8IADZ9PptDoej7UROJ/P7XK5tMbDZDJpNG2/38/btt1IWlVVw7IsbzTvYrGYGQ+j0eim1+sNlXMtzm01b2zmznuN5VrSQvcVyly4QmCTn4rfdh8Vj9dkWfaIRfxhg8FgeDgcVC+YeTS39y3OriUtz/MGS6t5YzN33i9YvinazHjuK5S5Z0gysBgJwWIkBIuRECxGQhSn0+k//spbRf9jwlhNQOfwZCK9b0DNht/zz0SeG8rs9sZ3rKShbQ3d1yWZCSGEEEIIIYQQQj4aWTcK/CGJeLeyq9Xqq28DjCHXmoZJXr1er8U3l27c+6h5MXb9ZDyMx+M53nM+Sxpy3yH3g+aNzdx5b7HcSRrerOYYu96byMyFm8lik0r6AoyVCaB538IlXnDl8Q/NO50Lr9u78mg+vJn5hJ4QLEZCsBgJwWIkBIuREEWe59a1c5KIbio0NnXUmuBrEbfb7aYoitpEgmz36EyuJA0t89+AvdYEX2YHMv/CfVlJK8vS670wMyGEEEIIIYQQQshHg2PXV3DsGgfHruT9YDESgsVICBYjIViMhHgZu6KtaiQRrecmtAG6sUbT0CaqY1s3du33+42J5zvOnknCbrf77TPGZnagw3zAp5U03GPoP1a9mZ8BSwFXa2Vh5IIAAAAASUVORK5CYII=')
+  }
+}
+
+@media (max-width: 768px) {
+  .text-center-xs {
+    text-align: center;
+  }
+  .account-header button {
+    border: none;
+    padding: 0 7px;
+    margin-top: 5px;
+    span {
+      svg {
+        margin-right: 0;
+      }
+      span {
+        display: none;
+      }
+    }
+  }
+  .mb25-xs {
+    margin-bottom: 25px;
+  }
+}

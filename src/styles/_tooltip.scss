@@ -1,0 +1,27 @@
+.tooltip {
+  font-family: inherit;
+}
+.tooltip-inner {
+  background-color: $white;
+  color: $grey;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 0;
+  padding: 11px 14px;
+}
+.tooltip.top-left .tooltip-arrow,
+.tooltip.top-right .tooltip-arrow,
+.tooltip.top .tooltip-arrow {
+  border-top-color: $white;
+}
+.tooltip.bottom-left .tooltip-arrow,
+.tooltip.bottom-right .tooltip-arrow,
+.tooltip.bottom .tooltip-arrow {
+  border-bottom-color: $white;
+}
+.tooltip.right .tooltip-arrow {
+  border-right-color: $white;
+}
+.tooltip.left .tooltip-arrow {
+  border-left-color: $white;
+}

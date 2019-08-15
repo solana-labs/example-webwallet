@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import {Wallet} from './wallet';
 import {Store} from './store';
 
+import './styles/index.scss';
+
 class App extends React.Component {
   state = {
     store: new Store(),

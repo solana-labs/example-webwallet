@@ -6,8 +6,10 @@ html {
 body {
   height: 100%;
   width: 100%;
-  background-color: #303030;
-  font-family: "Rubik", sans-serif;
+  background-color: #000;
+  font-family: "Exo", sans-serif;
+  color: #fff;
+  font-size: 15px;
 }
 
 #app {
@@ -15,16 +17,31 @@ body {
   width: 100%;
 }
 
-.well, .panel, .alert {
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active  {
+  -webkit-box-shadow: 0 0 0 30px #000 inset !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+.alert {
   margin: 20px;
 }
 
-button.margin-left {
-  margin-left: 5px;
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 28px;
+  height: 100px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid rgba(151,151,151, .5);
 }
 
-.logo {
-  display: block;
-  margin-top: 20px;
-  text-align: center;
+.header-right {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin-right: 40px;
 }

@@ -1,16 +1,17 @@
 import React from 'react';
 import {
-  Button,
   DropdownButton,
   HelpBlock,
   MenuItem,
   FormControl,
   FormGroup,
   InputGroup,
-  Panel,
+  ControlLabel,
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import * as web3 from '@solana/web3.js';
+
+import Button from './components/Button';
 
 export class Settings extends React.Component {
   constructor(props) {
@@ -92,52 +93,50 @@ export class Settings extends React.Component {
   render() {
     return (
       <div>
-        <p />
-        <Panel>
-          <Panel.Heading>Network Settings</Panel.Heading>
-          <Panel.Body>
-            <FormGroup validationState={this.state.validationState}>
-              <InputGroup>
-                <DropdownButton
-                  id="network-dropdown"
-                  componentClass={InputGroup.Button}
-                  title="Network"
-                  onSelect={::this.setNetworkEntryPoint}
+        <FormGroup validationState={this.state.validationState}>
+          <ControlLabel>Network Settings</ControlLabel>
+          <InputGroup className="sl-input">
+            <DropdownButton
+              id="network-dropdown"
+              componentClass={InputGroup.Button}
+              title="Network"
+              onSelect={::this.setNetworkEntryPoint}
+            >
+              {[
+                web3.testnetChannelEndpoint(process.env.CHANNEL),
+                'http://localhost:8899',
+              ].map((url, index) => (
+                <MenuItem
+                  key={index}
+                  eventKey={url}
+                  active={url === this.state.networkEntryPoint}
                 >
-                  {[
-                    web3.testnetChannelEndpoint(process.env.CHANNEL),
-                    'http://localhost:8899',
-                  ].map((url, index) => (
-                    <MenuItem key={index} eventKey={url}>
-                      {url}
-                    </MenuItem>
-                  ))}
-                </DropdownButton>
-                <FormControl
-                  type="text"
-                  value={this.state.networkEntryPoint}
-                  placeholder="Enter the URI of the network"
-                  onChange={e => this.setNetworkEntryPoint(e.target.value)}
-                />
-                <FormControl.Feedback />
-              </InputGroup>
-              <HelpBlock>{this.state.validationHelpBlock}</HelpBlock>
-            </FormGroup>
-          </Panel.Body>
-        </Panel>
-        <p />
-        <Panel>
-          <Panel.Heading>Account Settings</Panel.Heading>
-          <Panel.Body>
+                  {url}
+                </MenuItem>
+              ))}
+            </DropdownButton>
+            <FormControl
+              type="text"
+              value={this.state.networkEntryPoint}
+              placeholder="Enter the URI of the network"
+              onChange={e => this.setNetworkEntryPoint(e.target.value)}
+            />
+            <FormControl.Feedback />
+          </InputGroup>
+          <HelpBlock>{this.state.validationHelpBlock}</HelpBlock>
+        </FormGroup>
+        <div className="mt40">
+          <h5>Account Settings</h5>
+          <p className="text">
+            <span className="green">WARNING:</span>
+            &nbsp;Any tokens associated with the current account will be lost
+          </p>
+          <div className="text-center-xs">
             <Button bsStyle="danger" onClick={() => this.resetAccount()}>
               Reset Account
             </Button>
-            <p />
-            <HelpBlock>
-              Any tokens associated with the current account will be lost
-            </HelpBlock>
-          </Panel.Body>
-        </Panel>
+          </div>
+        </div>
       </div>
     );
   }
