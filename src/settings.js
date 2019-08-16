@@ -132,9 +132,7 @@ export class Settings extends React.Component {
             &nbsp;Any tokens associated with the current account will be lost
           </p>
           <div className="text-center-xs">
-            <Button bsStyle="danger" onClick={() => this.resetAccount()}>
-              Reset Account
-            </Button>
+            <Button onClick={() => this.resetAccount()}>Reset Account</Button>
           </div>
         </div>
       </div>

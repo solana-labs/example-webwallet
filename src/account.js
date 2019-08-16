@@ -19,7 +19,6 @@ import * as bip39 from 'bip39';
 import FileCopyIcon from './icons/file-copy.svg';
 import EyeIcon from './icons/eye.svg';
 import Button from './components/Button';
-
 const GENERATE_WALLET_MODE = 1;
 const RECOVER_WALLET_MODE = 2;
 
@@ -160,7 +159,6 @@ export class Account extends React.Component {
         <div className="text-center-xs">
           <Button
             disabled={!this.state.recoveredPhrase}
-            bsStyle="primary"
             onClick={() => this.recoverAccount()}
           >
             Recover Account

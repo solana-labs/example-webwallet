@@ -31,8 +31,8 @@ import {Account} from './account';
 import {Settings} from './settings';
 
 const alertIcon = {
-  danger: <WarnIcon fill='#F71EF4' />,
-  warning: <WarnIcon fill='#FFC617 ' />,
+  danger: <WarnIcon fill="#F71EF4" />,
+  warning: <WarnIcon fill="#FFC617 " />,
 };
 
 class PublicKeyInput extends React.Component {
@@ -224,7 +224,7 @@ class DismissibleMessages extends React.Component {
           {alertIcon[style]}
           <span>{msg}</span>
           <a href="#" onClick={() => this.props.onDismiss(index)}>
-            <CloseIcon fill='#fff' width={19} height={19} />
+            <CloseIcon fill="#fff" width={19} height={19} />
           </a>{' '}
         </Alert>
       );
@@ -247,7 +247,10 @@ class BusyModal extends React.Component {
         aria-labelledby="contained-modal-title-sm"
       >
         <Modal.Header>
-          <Modal.Title className="sl-modal-title-light" id="contained-modal-title-sm">
+          <Modal.Title
+            className="sl-modal-title-light"
+            id="contained-modal-title-sm"
+          >
             {this.props.title}
           </Modal.Title>
         </Modal.Header>
@@ -581,11 +584,11 @@ export class Wallet extends React.Component {
           <Row>
             <Col xs={12}>
               <div className="account-header">
-                <h2 className="decor">
-                  account information
-                </h2>
+                <h2 className="decor">account information</h2>
                 <button onClick={() => this.setState({settingsModal: true})}>
-                  <span><GearIcon /> <span>Settings</span></span>
+                  <span>
+                    <GearIcon /> <span>Settings</span>
+                  </span>
                 </button>
               </div>
             </Col>
@@ -593,18 +596,18 @@ export class Wallet extends React.Component {
           <Row>
             <Col xs={12} md={5}>
               <Well>
-                <h4>
-                  Account Balance
-                </h4>
+                <h4>Account Balance</h4>
                 <div className="balance">
-                  <div className="balance-val">
-                    {this.state.balance}
-                  </div>
-                  <div className="balance-ttl">
-                    Sols
-                  </div>
-                  <OverlayTrigger placement="top" overlay={refreshBalanceTooltip}>
-                    <button className="icon-btn" onClick={() => this.refreshBalance()}>
+                  <div className="balance-val">{this.state.balance}</div>
+                  <div className="balance-ttl">Lamports</div>
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={refreshBalanceTooltip}
+                  >
+                    <button
+                      className="icon-btn"
+                      onClick={() => this.refreshBalance()}
+                    >
                       <RefreshIcon />
                     </button>
                   </OverlayTrigger>
@@ -633,8 +636,11 @@ export class Wallet extends React.Component {
                     />
                     <InputGroup.Button>
                       <OverlayTrigger placement="bottom" overlay={copyTooltip}>
-                        <button className="icon-btn" onClick={() => this.copyPublicKey()}>
-                          <FileCopyIcon/>
+                        <button
+                          className="icon-btn"
+                          onClick={() => this.copyPublicKey()}
+                        >
+                          <FileCopyIcon />
                         </button>
                       </OverlayTrigger>
                     </InputGroup.Button>
@@ -644,7 +650,7 @@ export class Wallet extends React.Component {
             </Col>
           </Row>
         </Grid>
-        {this.renderPanels()}
+        <div className="container">{this.renderPanels()}</div>
       </div>
     );
   }
@@ -654,10 +660,10 @@ export class Wallet extends React.Component {
       return this.renderTokenRequestPanel();
     } else {
       return (
-        <div className="container">
+        <React.Fragment>
           {this.renderSendTokensPanel()}
           {this.renderConfirmTxPanel()}
-        </div>
+        </React.Fragment>
       );
     }
   }
@@ -679,7 +685,7 @@ export class Wallet extends React.Component {
             defaultValue={this.state.requestedAmount}
             onAmount={amount => this.setRecipientAmount(amount)}
           />
-          <div>
+          <div className="btns">
             <Button
               disabled={this.sendDisabled()}
               onClick={() => this.sendTransaction(false)}
@@ -687,8 +693,6 @@ export class Wallet extends React.Component {
               Send
             </Button>
             <Button
-              bsStyle="success"
-              className="margin-left"
               disabled={this.sendDisabled()}
               onClick={() => this.sendTransaction(true)}
             >

@@ -86,3 +86,9 @@ hr {
     margin-bottom: 25px;
   }
 }
+
+.btns {
+  & > *:not(:last-child) {
+    margin-right: 15px;
+  }
+}

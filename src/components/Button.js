@@ -10,7 +10,7 @@ const Button = props => {
 };
 
 Button.propTypes = {
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
 };
 
 export default Button;
