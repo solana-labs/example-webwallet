@@ -1,0 +1,40 @@
+.alert {
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  font-weight: bold;
+  overflow-wrap: break-word;
+  & > svg {
+    margin-right: 16px;
+    margin-top: -3px;
+    flex-shrink: 0;
+  }
+  & > span {
+    min-width: 1px;
+    padding-right: 15px;
+  }
+  a {
+    margin-left: auto;
+  }
+  &-info,
+  &-warning,
+  &-danger {
+    background: $grey;
+    border-color: $grey;
+  }
+  &-danger {
+    color: $error;
+  }
+  &-warning {
+    color: $warning;
+  }
+  &-info {
+    color: $primary;
+  }
+}
+@media (max-width: 768px) {
+  .alert {
+    margin-top: 20px;
+  }
+}

@@ -25,10 +25,6 @@ input:-webkit-autofill:active  {
   -webkit-text-fill-color: #fff !important;
 }
 
-.alert {
-  margin: 20px;
-}
-
 .header {
   display: flex;
   align-items: center;
@@ -39,9 +35,19 @@ input:-webkit-autofill:active  {
   border-bottom: 1px solid rgba(151,151,151, .5);
 }
 
+
 .header-right {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   margin-right: 40px;
+}
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 26px;
+    margin-bottom: 0;
+  }
+  .header-right {
+    margin-right: 0;
+  }
 }

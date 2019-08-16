@@ -158,7 +158,11 @@ export class Account extends React.Component {
           </HelpBlock>
         </FormGroup>
         <div className="text-center-xs">
-          <Button bsStyle="primary" onClick={() => this.recoverAccount()}>
+          <Button
+            disabled={!this.state.recoveredPhrase}
+            bsStyle="primary"
+            onClick={() => this.recoverAccount()}
+          >
             Recover Account
           </Button>
         </div>
@@ -204,7 +208,12 @@ export class Account extends React.Component {
           this wallet in the future.
         </p>
         <div className="text-center-xs">
-          <Button onClick={() => this.createAccount()}>Create Account</Button>
+          <Button
+            onClick={() => this.createAccount()}
+            disabled={!this.state.generatedPhrase}
+          >
+            Create Account
+          </Button>
         </div>
       </React.Fragment>
     );
