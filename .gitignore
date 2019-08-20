@@ -3,3 +3,4 @@
 /dist/*worker.js
 *.sw[po]
 /store
+.idea
