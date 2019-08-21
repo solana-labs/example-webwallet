@@ -31,12 +31,13 @@ import {Account} from './account';
 import {Settings} from './settings';
 
 const alertIcon = {
-  danger: <WarnIcon fill="#F71EF4" />,
-  warning: <WarnIcon fill="#FFC617 " />,
+  danger: <WarnIcon fill="#F71EF4"/>,
+  warning: <WarnIcon fill="#FFC617 "/>,
 };
 
 class PublicKeyInput extends React.Component {
   state = {
+
     value: '',
     validationState: null,
   };
@@ -95,7 +96,7 @@ class PublicKeyInput extends React.Component {
               placeholder="Enter the public key of the recipient"
               onChange={e => this.handleChange(e.target.value)}
             />
-            <FormControl.Feedback />
+            <FormControl.Feedback/>
           </InputGroup>
           <HelpBlock>{this.identityText()}</HelpBlock>
         </FormGroup>
@@ -103,6 +104,7 @@ class PublicKeyInput extends React.Component {
     );
   }
 }
+
 PublicKeyInput.propTypes = {
   onPublicKey: PropTypes.func,
   defaultValue: PropTypes.string,
@@ -151,7 +153,7 @@ class TokenInput extends React.Component {
               placeholder="Enter amount to transfer"
               onChange={e => this.handleChange(e.target.value)}
             />
-            <FormControl.Feedback />
+            <FormControl.Feedback/>
           </InputGroup>
           <HelpBlock>{this.state.help}</HelpBlock>
         </FormGroup>
@@ -159,6 +161,7 @@ class TokenInput extends React.Component {
     );
   }
 }
+
 TokenInput.propTypes = {
   onAmount: PropTypes.func,
   defaultValue: PropTypes.string,
@@ -205,13 +208,14 @@ class SignatureInput extends React.Component {
               placeholder="Enter a transaction signature"
               onChange={e => this.handleChange(e)}
             />
-            <FormControl.Feedback />
+            <FormControl.Feedback/>
           </InputGroup>
         </FormGroup>
       </form>
     );
   }
 }
+
 SignatureInput.propTypes = {
   onSignature: PropTypes.func,
 };
@@ -224,7 +228,7 @@ class DismissibleMessages extends React.Component {
           {alertIcon[style]}
           <span>{msg}</span>
           <a href="#" onClick={() => this.props.onDismiss(index)}>
-            <CloseIcon fill="#fff" width={19} height={19} />
+            <CloseIcon fill="#fff" width={19} height={19}/>
           </a>{' '}
         </Alert>
       );
@@ -232,6 +236,7 @@ class DismissibleMessages extends React.Component {
     return <div>{messages}</div>;
   }
 }
+
 DismissibleMessages.propTypes = {
   messages: PropTypes.array,
   onDismiss: PropTypes.func,
@@ -256,14 +261,15 @@ class BusyModal extends React.Component {
         </Modal.Header>
         <Modal.Body>
           {this.props.text}
-          <br />
-          <br />
-          <Loader />
+          <br/>
+          <br/>
+          <Loader/>
         </Modal.Body>
       </Modal>
     );
   }
 }
+
 BusyModal.propTypes = {
   title: PropTypes.string,
   text: PropTypes.string,
@@ -284,12 +290,13 @@ class SettingsModal extends React.Component {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Settings store={this.props.store} onHide={this.props.onHide} />
+          <Settings store={this.props.store} onHide={this.props.onHide}/>
         </Modal.Body>
       </Modal>
     );
   }
 }
+
 SettingsModal.propTypes = {
   onHide: PropTypes.func,
   store: PropTypes.object,
@@ -312,6 +319,8 @@ export class Wallet extends React.Component {
     recipientIdentity: null,
     confirmationSignature: null,
     transactionConfirmed: null,
+    unsignedTransaction: null,
+    formattedUnsignedTransaction: null,
   };
 
   setConfirmationSignature(confirmationSignature) {
@@ -428,6 +437,55 @@ export class Wallet extends React.Component {
     });
   }
 
+  onConfirmTransactionRequest(params, origin) {
+    if (!params || this.state.requestPending) return;
+    if (!params.format || !params.network || !params.transaction) {
+      if (!params.network) this.addError(`Request did not specify a network`);
+      if (!params.format) this.addError(`Request did not specify a transaction format`);
+      if (!params.transaction) this.addError(`Request did not specify a transaction`);
+      return;
+    }
+
+    let requestedNetwork;
+    try {
+      requestedNetwork = new URL(params.network).origin;
+    } catch (err) {
+      this.addError(`Request network is invalid: "${params.network}"`);
+      return;
+    }
+
+    const walletNetwork = new URL(this.props.store.networkEntryPoint).origin;
+    if (requestedNetwork !== walletNetwork) {
+      this.props.store.setNetworkEntryPoint(requestedNetwork);
+      this.addWarning(
+        `Changed wallet network from "${walletNetwork}" to "${requestedNetwork}"`,
+      );
+    }
+
+    const transaction = new web3.Transaction();
+    const input = JSON.parse(params.transaction);
+
+    const converted = {};
+    converted.keys = [];
+    converted.programId = new web3.PublicKey(input.programId);
+    converted.data = Buffer.from(input.data, 'hex');
+    input.keys.map(key => {
+      converted.keys.push({
+          pubkey: new web3.PublicKey(key.pubkey),
+          isSigner: key.isSigner,
+          isDebitable: key.isDebitable,
+        });
+    });
+    transaction.add(converted);
+
+    this.setState({
+      requesterOrigin: origin,
+      requestPending: true,
+      unsignedTransaction: transaction,
+      formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
+    });
+  }
+
   postWindowMessage(method, params) {
     if (window.opener) {
       window.opener.postMessage({method, params}, this.state.requesterOrigin);
@@ -440,7 +498,10 @@ export class Wallet extends React.Component {
       if (e.data) {
         switch (e.data.method) {
           case 'addFunds':
-            this.onAddFunds(e.data.params, e.origin);
+            this.onAddFunds(e.data.params, e.currentTarget.origin);
+            return true;
+          case 'confirmTX':
+            this.onConfirmTransactionRequest(e.data.params, e.currentTarget.origin);
             return true;
         }
       }
@@ -521,10 +582,43 @@ export class Wallet extends React.Component {
     });
   }
 
+  signAndSendTransaction(closeOnSuccess) {
+    this.runModal('Sending Transaction', 'Please wait...', async () => {
+      let signature = '';
+      try {
+        signature = await web3.sendAndConfirmTransaction(
+          this.web3sol,
+          this.state.unsignedTransaction,
+          this.state.account,
+        );
+      } catch (err) {
+        // Transaction failed but fees were still taken
+        this.setState({
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
+        });
+        this.postWindowMessage('confirmTXResponse', {err: true});
+        throw err;
+      }
+
+      this.postWindowMessage('confirmTXResponse', {signature});
+      if (closeOnSuccess) {
+        window.close();
+      } else {
+        this.setState({
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
+        });
+      }
+    });
+  }
+
   confirmTransaction() {
     this.runModal('Confirming Transaction', 'Please wait...', async () => {
+      const signature = await this.web3sol.sendTransaction(
+        this.state.unsignedTransaction,
+        this.state.account,
+      );
       const result = await this.web3sol.confirmTransaction(
-        this.state.confirmationSignature,
+        signature,
       );
       this.setState({
         transactionConfirmed: result,
@@ -541,7 +635,7 @@ export class Wallet extends React.Component {
 
   render() {
     if (!this.state.account) {
-      return <Account store={this.props.store} />;
+      return <Account store={this.props.store}/>;
     }
 
     const copyTooltip = (
@@ -587,7 +681,7 @@ export class Wallet extends React.Component {
                 <h2 className="decor">account information</h2>
                 <button onClick={() => this.setState({settingsModal: true})}>
                   <span>
-                    <GearIcon /> <span>Settings</span>
+                    <GearIcon/> <span>Settings</span>
                   </span>
                 </button>
               </div>
@@ -608,7 +702,7 @@ export class Wallet extends React.Component {
                       className="icon-btn"
                       onClick={() => this.refreshBalance()}
                     >
-                      <RefreshIcon />
+                      <RefreshIcon/>
                     </button>
                   </OverlayTrigger>
                   <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
@@ -617,7 +711,7 @@ export class Wallet extends React.Component {
                       disabled={airdropDisabled}
                       onClick={() => this.requestAirdrop()}
                     >
-                      <SendIcon />
+                      <SendIcon/>
                     </button>
                   </OverlayTrigger>
                 </div>
@@ -640,7 +734,7 @@ export class Wallet extends React.Component {
                           className="icon-btn"
                           onClick={() => this.copyPublicKey()}
                         >
-                          <FileCopyIcon />
+                          <FileCopyIcon/>
                         </button>
                       </OverlayTrigger>
                     </InputGroup.Button>
@@ -657,7 +751,11 @@ export class Wallet extends React.Component {
 
   renderPanels() {
     if (this.state.requestMode) {
-      return this.renderTokenRequestPanel();
+      if (!!this.state.requestedPublicKey) {
+        return this.renderTokenRequestPanel();
+      } else {
+        return this.renderConfirmTransactionRequestPanel();
+      }
     } else {
       return (
         <React.Fragment>
@@ -695,6 +793,33 @@ export class Wallet extends React.Component {
             <Button
               disabled={this.sendDisabled()}
               onClick={() => this.sendTransaction(true)}
+            >
+              Send & Close
+            </Button>
+          </div>
+        </Panel.Body>
+      </Panel>
+    );
+  }
+
+  renderConfirmTransactionRequestPanel() {
+    return (
+      <Panel>
+        <Panel.Heading>Confirm transaction Request</Panel.Heading>
+        <Panel.Body>
+          <span>
+            {this.state.formattedUnsignedTransaction}
+          </span>
+          <div className="btns">
+            <Button
+              disabled={this.sendDisabled()}
+              onClick={() => this.signAndSendTransaction(false)}
+            >
+              Send
+            </Button>
+            <Button
+              disabled={this.sendDisabled()}
+              onClick={() => this.signAndSendTransaction(true)}
             >
               Send & Close
             </Button>
@@ -789,6 +914,7 @@ export class Wallet extends React.Component {
     );
   }
 }
+
 Wallet.propTypes = {
   store: PropTypes.object,
 };
