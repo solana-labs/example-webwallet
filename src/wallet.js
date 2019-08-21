@@ -465,8 +465,6 @@ export class Wallet extends React.Component {
     const transaction = new web3.Transaction();
     const input = JSON.parse(params.transaction);
 
-    console.log("input", input);
-
     const converted = {};
     converted.keys = [];
     converted.programId = new web3.PublicKey(input.programId);
@@ -479,10 +477,6 @@ export class Wallet extends React.Component {
         });
     });
     transaction.add(converted);
-
-    console.log('>>>transaction', JSON.stringify(transaction, null, 4));
-    console.log('>>>transaction obj', transaction);
-    console.log('>>>formattedUnsignedTransaction', JSON.stringify(JSON.parse(params.transaction), null, 4));
 
     this.setState({
       requesterOrigin: origin,
