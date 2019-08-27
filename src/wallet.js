@@ -320,7 +320,8 @@ export class Wallet extends React.Component {
     confirmationSignature: null,
     transactionConfirmed: null,
     unsignedTransaction: null,
-    formattedUnsignedTransaction: null,
+    formattedUnsignedTransaction: '',
+    description: '',
   };
 
   setConfirmationSignature(confirmationSignature) {
@@ -471,16 +472,18 @@ export class Wallet extends React.Component {
     converted.data = Buffer.from(input.data, 'hex');
     input.keys.map(key => {
       converted.keys.push({
-          pubkey: new web3.PublicKey(key.pubkey),
-          isSigner: key.isSigner,
-          isDebitable: key.isDebitable,
-        });
+        pubkey: new web3.PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isDebitable: key.isDebitable,
+      });
     });
     transaction.add(converted);
 
+    console.log('params', params);
     this.setState({
       requesterOrigin: origin,
       requestPending: true,
+      description: params.description ? params.description : '',
       unsignedTransaction: transaction,
       formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
     });
@@ -751,7 +754,7 @@ export class Wallet extends React.Component {
 
   renderPanels() {
     if (this.state.requestMode) {
-      if (!!this.state.requestedPublicKey) {
+      if (this.state.requestedPublicKey) {
         return this.renderTokenRequestPanel();
       } else {
         return this.renderConfirmTransactionRequestPanel();
@@ -807,9 +810,16 @@ export class Wallet extends React.Component {
       <Panel>
         <Panel.Heading>Confirm transaction Request</Panel.Heading>
         <Panel.Body>
-          <span>
-            {this.state.formattedUnsignedTransaction}
-          </span>
+          <div>
+            {this.state.description.split('\n').map((i, key) => {
+              return <p key={key}>{i}</p>;
+            })}
+          </div>
+          <div>
+            <pre>
+              {this.state.formattedUnsignedTransaction}
+            </pre>
+          </div>
           <div className="btns">
             <Button
               disabled={this.sendDisabled()}
