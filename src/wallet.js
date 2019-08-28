@@ -486,6 +486,7 @@ export class Wallet extends React.Component {
       description: params.description ? params.description : '',
       unsignedTransaction: transaction,
       formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
+      requestedPublicKey: null
     });
   }
 
