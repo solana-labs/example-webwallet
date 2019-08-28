@@ -814,11 +814,6 @@ export class Wallet extends React.Component {
               return <p key={key}>{i}</p>;
             })}
           </div>
-          <div>
-            <pre>
-              {this.state.formattedUnsignedTransaction}
-            </pre>
-          </div>
           <div className="btns">
             <Button
               disabled={this.sendDisabled()}
@@ -832,6 +827,12 @@ export class Wallet extends React.Component {
             >
               Send & Close
             </Button>
+          </div>
+          <p/>
+          <div>
+            <pre>
+              {this.state.formattedUnsignedTransaction}
+            </pre>
           </div>
         </Panel.Body>
       </Panel>
