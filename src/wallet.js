@@ -311,7 +311,6 @@ export class Wallet extends React.Component {
     account: null,
     requestMode: false,
     requesterOrigin: '*',
-    requestPending: false,
     requestedPublicKey: '',
     requestedAmount: '',
     recipientPublicKey: '',
@@ -407,7 +406,6 @@ export class Wallet extends React.Component {
   };
 
   onAddFunds(params, origin) {
-    if (!params || this.state.requestPending) return;
     if (!params.pubkey || !params.network) {
       if (!params.pubkey) this.addError(`Request did not specify a public key`);
       if (!params.network) this.addError(`Request did not specify a network`);
@@ -432,14 +430,12 @@ export class Wallet extends React.Component {
 
     this.setState({
       requesterOrigin: origin,
-      requestPending: true,
       requestedAmount: `${params.amount || ''}`,
       requestedPublicKey: params.pubkey,
     });
   }
 
   onConfirmTransactionRequest(params, origin) {
-    if (!params || this.state.requestPending) return;
     if (!params.format || !params.network || !params.transaction) {
       if (!params.network) this.addError(`Request did not specify a network`);
       if (!params.format) this.addError(`Request did not specify a transaction format`);
@@ -479,14 +475,12 @@ export class Wallet extends React.Component {
     });
     transaction.add(converted);
 
-    console.log('params', params);
     this.setState({
       requesterOrigin: origin,
-      requestPending: true,
       description: params.description ? params.description : '',
       unsignedTransaction: transaction,
       formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
-      requestedPublicKey: null
+      requestedPublicKey: null,
     });
   }
 
@@ -552,7 +546,7 @@ export class Wallet extends React.Component {
   sendTransaction(closeOnSuccess) {
     this.runModal('Sending Transaction', 'Please wait...', async () => {
       const amount = this.state.recipientAmount;
-      this.setState({requestedAmount: '', requestPending: false});
+      this.setState({requestedAmount: ''});
       const transaction = web3.SystemProgram.transfer(
         this.state.account.publicKey,
         new web3.PublicKey(this.state.recipientPublicKey),
@@ -634,6 +628,8 @@ export class Wallet extends React.Component {
     return (
       this.state.recipientPublicKey === null ||
       this.state.recipientAmount === null
+    ) || (
+      this.state.formattedUnsignedTransaction === null
     );
   }
 
