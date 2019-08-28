@@ -460,20 +460,22 @@ export class Wallet extends React.Component {
     }
 
     const transaction = new web3.Transaction();
-    const input = JSON.parse(params.transaction);
+    const inputs = JSON.parse(params.transaction);
 
-    const converted = {};
-    converted.keys = [];
-    converted.programId = new web3.PublicKey(input.programId);
-    converted.data = Buffer.from(input.data, 'hex');
-    input.keys.map(key => {
-      converted.keys.push({
-        pubkey: new web3.PublicKey(key.pubkey),
-        isSigner: key.isSigner,
-        isDebitable: key.isDebitable,
+    inputs.map(input  => {
+      const converted = {};
+      converted.keys = [];
+      converted.programId = new web3.PublicKey(input.programId);
+      converted.data = Buffer.from(input.data, 'hex');
+      input.keys.map(key => {
+        converted.keys.push({
+          pubkey: new web3.PublicKey(key.pubkey),
+          isSigner: key.isSigner,
+          isDebitable: key.isDebitable,
+        });
       });
+      transaction.add(converted);
     });
-    transaction.add(converted);
 
     this.setState({
       requesterOrigin: origin,
