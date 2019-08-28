@@ -628,7 +628,7 @@ export class Wallet extends React.Component {
     return (
       this.state.recipientPublicKey === null ||
       this.state.recipientAmount === null
-    ) || (
+    ) && (
       this.state.formattedUnsignedTransaction === null
     );
   }
