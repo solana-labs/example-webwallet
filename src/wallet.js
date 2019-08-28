@@ -26,14 +26,26 @@ import FileCopyIcon from './icons/file-copy.svg';
 import GearIcon from './icons/gear.svg';
 import CloseIcon from './icons/close.svg';
 import WarnIcon from './icons/warn.svg';
+import InfoIcon from './icons/info.svg';
 import Button from './components/Button';
 import {Account} from './account';
 import {Settings} from './settings';
+
+const LAMPORT_SOL_RATIO = 0.0000000000582;
 
 const alertIcon = {
   danger: <WarnIcon fill="#F71EF4" />,
   warning: <WarnIcon fill="#FFC617 " />,
 };
+
+const copyTooltip = (
+  <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
+);
+const refreshBalanceTooltip = (
+  <Tooltip id="refresh">Refresh account balance</Tooltip>
+);
+
+const airdropTooltip = <Tooltip id="airdrop">Request an airdrop</Tooltip>;
 
 class PublicKeyInput extends React.Component {
   state = {
@@ -449,6 +461,10 @@ export class Wallet extends React.Component {
     this.postWindowMessage('ready');
   }
 
+  closeRequestModal = () => {
+    this.setState({requestMode: false});
+  };
+
   componentDidMount() {
     this.props.store.onChange(this.onStoreChange);
     this.onStoreChange();
@@ -544,14 +560,6 @@ export class Wallet extends React.Component {
       return <Account store={this.props.store} />;
     }
 
-    const copyTooltip = (
-      <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
-    );
-    const refreshBalanceTooltip = (
-      <Tooltip id="refresh">Refresh account balance</Tooltip>
-    );
-    const airdropTooltip = <Tooltip id="airdrop">Request an airdrop</Tooltip>;
-
     const busyModal = this.state.busyModal ? (
       <BusyModal
         show
@@ -568,12 +576,11 @@ export class Wallet extends React.Component {
       />
     ) : null;
 
-    const airdropDisabled = this.state.balance >= 1000;
-
     return (
       <div>
         {busyModal}
         {settingsModal}
+        {this.state.requestMode && this.renderTokenRequestPanel()}
         <div className="container">
           <DismissibleMessages
             messages={this.state.messages}
@@ -595,33 +602,7 @@ export class Wallet extends React.Component {
           </Row>
           <Row>
             <Col xs={12} md={5}>
-              <Well>
-                <h4>Account Balance</h4>
-                <div className="balance">
-                  <div className="balance-val">{this.state.balance}</div>
-                  <div className="balance-ttl">Lamports</div>
-                  <OverlayTrigger
-                    placement="top"
-                    overlay={refreshBalanceTooltip}
-                  >
-                    <button
-                      className="icon-btn"
-                      onClick={() => this.refreshBalance()}
-                    >
-                      <RefreshIcon />
-                    </button>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
-                    <button
-                      className="icon-btn"
-                      disabled={airdropDisabled}
-                      onClick={() => this.requestAirdrop()}
-                    >
-                      <SendIcon />
-                    </button>
-                  </OverlayTrigger>
-                </div>
-              </Well>
+              <Well>{this.renderAccountBalance()}</Well>
             </Col>
             <Col xs={12} md={7}>
               <Well>
@@ -655,52 +636,164 @@ export class Wallet extends React.Component {
     );
   }
 
-  renderPanels() {
-    if (this.state.requestMode) {
-      return this.renderTokenRequestPanel();
+  renderBalance() {
+    const solBalance = (this.state.balance * LAMPORT_SOL_RATIO).toFixed(4);
+    if (solBalance < 0.0001) {
+      return <span>{solBalance}...</span>;
     } else {
-      return (
-        <React.Fragment>
-          {this.renderSendTokensPanel()}
-          {this.renderConfirmTxPanel()}
-        </React.Fragment>
-      );
+      return <span>{parseFloat(solBalance)}</span>;
     }
   }
 
+  renderPanels() {
+    return (
+      <React.Fragment>
+        {this.renderSendTokensPanel()}
+        {this.renderConfirmTxPanel()}
+      </React.Fragment>
+    );
+  }
+
+  renderAccountBalance = () => {
+    const airdropDisabled = this.state.balance >= 1000;
+    const balanceTooltip = (
+      <Tooltip id="refresh">
+        {(this.state.balance * LAMPORT_SOL_RATIO).toFixed(20)}
+      </Tooltip>
+    );
+    return (
+      <React.Fragment>
+        <div className="balance-header">
+          <div className="balance-title">Account Balance</div>
+          <OverlayTrigger placement="top" overlay={refreshBalanceTooltip}>
+            <button className="icon-btn" onClick={() => this.refreshBalance()}>
+              <RefreshIcon />
+            </button>
+          </OverlayTrigger>
+          <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
+            <button
+              className="icon-btn"
+              disabled={airdropDisabled}
+              onClick={() => this.requestAirdrop()}
+            >
+              <SendIcon />
+            </button>
+          </OverlayTrigger>
+        </div>
+        <div className="balance">
+          <div className="balance-val">{this.renderBalance()}</div>
+          <div className="balance-ttl">sols</div>
+          <OverlayTrigger placement="top" overlay={balanceTooltip}>
+            <InfoIcon />
+          </OverlayTrigger>
+        </div>
+      </React.Fragment>
+    );
+  };
+
   renderTokenRequestPanel() {
     return (
-      <Panel>
-        <Panel.Heading>Token Request</Panel.Heading>
-        <Panel.Body>
-          <PublicKeyInput
-            key={this.state.requestedPublicKey}
-            defaultValue={this.state.requestedPublicKey || ''}
-            onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
-            identity={this.state.recipientIdentity}
-          />
-          <TokenInput
-            key={this.state.requestedAmount + this.state.balance}
-            maxValue={this.state.balance}
-            defaultValue={this.state.requestedAmount}
-            onAmount={amount => this.setRecipientAmount(amount)}
-          />
-          <div className="btns">
-            <Button
-              disabled={this.sendDisabled()}
-              onClick={() => this.sendTransaction(false)}
-            >
-              Send
-            </Button>
-            <Button
-              disabled={this.sendDisabled()}
-              onClick={() => this.sendTransaction(true)}
-            >
-              Send & Close
-            </Button>
-          </div>
-        </Panel.Body>
-      </Panel>
+      <div className="request-modal">
+        <Grid>
+          <Row>
+            <Col xs={12}>
+              <div className="request-modal__header">
+                <h2>Request Tokens</h2>
+                <button
+                  className="request-modal__close"
+                  type="button"
+                  onClick={this.closeRequestModal}
+                >
+                  <CloseIcon width={19} height={19} fill="#fff" />
+                </button>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <div className="account-header">
+                <h4>account information</h4>
+                <button onClick={() => this.setState({settingsModal: true})}>
+                  <span>
+                    <GearIcon /> <span>Settings</span>
+                  </span>
+                </button>
+              </div>
+            </Col>
+          </Row>
+          <Row className="request-modal__row">
+            <Col xs={12} md={4}>
+              {this.renderAccountBalance()}
+            </Col>
+            <Col xs={12} md={7} mdOffset={1}>
+              <FormGroup>
+                <ControlLabel>Account Public Key</ControlLabel>
+                <InputGroup className="sl-input">
+                  <FormControl
+                    readOnly
+                    type="text"
+                    size="21"
+                    value={this.state.account.publicKey}
+                  />
+                  <InputGroup.Button>
+                    <OverlayTrigger placement="bottom" overlay={copyTooltip}>
+                      <button
+                        className="icon-btn"
+                        onClick={() => this.copyPublicKey()}
+                      >
+                        <FileCopyIcon />
+                      </button>
+                    </OverlayTrigger>
+                  </InputGroup.Button>
+                </InputGroup>
+              </FormGroup>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <div className="account-header">
+                <h4>Request tokens</h4>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} md={5}>
+              <TokenInput
+                key={this.state.requestedAmount + this.state.balance}
+                maxValue={this.state.balance}
+                defaultValue={this.state.requestedAmount}
+                onAmount={amount => this.setRecipientAmount(amount)}
+              />
+            </Col>
+            <Col xs={12} md={7}>
+              <PublicKeyInput
+                key={this.state.requestedPublicKey}
+                defaultValue={this.state.requestedPublicKey || ''}
+                onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
+                identity={this.state.recipientIdentity}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <div className="request-modal__btns">
+                <Button
+                  disabled={this.sendDisabled()}
+                  onClick={() => this.sendTransaction(false)}
+                >
+                  Send
+                </Button>
+                <Button
+                  disabled={this.sendDisabled()}
+                  onClick={() => this.sendTransaction(true)}
+                >
+                  Send & Close
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Grid>
+      </div>
     );
   }
 
