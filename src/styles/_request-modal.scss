@@ -9,13 +9,16 @@
   padding: 30px;
   overflow-y: auto;
   @media (max-width: 768px) {
-    padding: 15px;
+    padding: 10px;
   }
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 31px;
+    @media (max-width: 768px) {
+      margin-bottom: 0;
+    }
   }
   &__row {
     margin-bottom: 75px;

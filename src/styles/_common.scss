@@ -69,15 +69,18 @@ hr {
   .text-center-xs {
     text-align: center;
   }
-  .account-header button {
-    border: none;
-    padding: 0 7px;
-    span {
-      svg {
-        margin-right: 0;
-      }
+  .account-header {
+    margin-bottom: 0;
+    button {
+      border: none;
+      padding: 0 7px;
       span {
-        display: none;
+        svg {
+          margin-right: 0;
+        }
+        span {
+          display: none;
+        }
       }
     }
   }

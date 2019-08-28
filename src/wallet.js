@@ -460,7 +460,7 @@ export class Wallet extends React.Component {
   }
 
   closeRequestModal = () => {
-    this.setState({requestMode: false});
+    window.close();
   };
 
   componentDidMount() {
@@ -634,15 +634,6 @@ export class Wallet extends React.Component {
     );
   }
 
-  renderBalance() {
-    const balance = this.state.balance;
-    if (balance > 10000) {
-      return <span>{balance}...</span>;
-    } else {
-      return <span>{balance}</span>;
-    }
-  }
-
   renderPanels() {
     return (
       <React.Fragment>
@@ -653,7 +644,8 @@ export class Wallet extends React.Component {
   }
 
   renderAccountBalance = () => {
-    const airdropDisabled = this.state.balance >= 1000;
+    const { balance } = this.state;
+    const airdropDisabled = balance >= 1000;
     const balanceTooltip = (
       <Tooltip id="refresh">
         {this.state.balance}
@@ -679,7 +671,7 @@ export class Wallet extends React.Component {
           </OverlayTrigger>
         </div>
         <div className="balance">
-          <div className="balance-val">{this.renderBalance()}</div>
+          <div className="balance-val">{balance}</div>
           <div className="balance-ttl">lamports</div>
           <OverlayTrigger placement="top" overlay={balanceTooltip}>
             <InfoIcon />
@@ -696,7 +688,7 @@ export class Wallet extends React.Component {
           <Row>
             <Col xs={12}>
               <div className="request-modal__header">
-                <h2>Request Tokens</h2>
+                <h2>Token Request</h2>
                 <button
                   className="request-modal__close"
                   type="button"
@@ -750,7 +742,7 @@ export class Wallet extends React.Component {
           <Row>
             <Col xs={12}>
               <div className="account-header">
-                <h4>Request tokens</h4>
+                <h4>Send Tokens</h4>
               </div>
             </Col>
           </Row>
@@ -777,15 +769,9 @@ export class Wallet extends React.Component {
               <div className="request-modal__btns">
                 <Button
                   disabled={this.sendDisabled()}
-                  onClick={() => this.sendTransaction(false)}
-                >
-                  Send
-                </Button>
-                <Button
-                  disabled={this.sendDisabled()}
                   onClick={() => this.sendTransaction(true)}
                 >
-                  Send & Close
+                  Send
                 </Button>
               </div>
             </Col>
