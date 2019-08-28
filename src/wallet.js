@@ -39,6 +39,7 @@ class PublicKeyInput extends React.Component {
   state = {
     value: '',
     validationState: null,
+    help: '',
   };
 
   componentDidMount() {
@@ -47,30 +48,29 @@ class PublicKeyInput extends React.Component {
 
   getValidationState(value) {
     const length = value.length;
-    if (length === 44) {
-      if (value.match(/^[A-Za-z0-9]+$/)) {
-        return 'success';
-      }
-      return 'error';
-    } else if (length > 44) {
-      return 'error';
-    } else if (length > 0) {
-      return 'warning';
+    if (length === 0) {
+      return [null, ''];
     }
-    return null;
+
+    try {
+      new web3.PublicKey(value);
+      return ['success', this.identityText(value)];
+    } catch (err) {
+      return ['error', 'Invalid Public Key'];
+    }
   }
 
   handleChange(value) {
-    const validationState = this.getValidationState(value);
-    this.setState({value, validationState});
+    const [validationState, help] = this.getValidationState(value);
+    this.setState({value, validationState, help});
     this.props.onPublicKey(validationState === 'success' ? value : null);
   }
 
-  identityText() {
-    if (this.props.identity) {
+  identityText(value) {
+    if (this.props.identity && value === this.props.defaultValue) {
       const {name, keybaseUsername} = this.props.identity;
       if (keybaseUsername) {
-        const verifyUrl = `https://keybase.pub/${keybaseUsername}/solana/validator-${this.state.value}`;
+        const verifyUrl = `https://keybase.pub/${keybaseUsername}/solana/validator-${value}`;
         return (
           <span>
             {`Identified "${name}" who can be verified on `}
@@ -84,9 +84,10 @@ class PublicKeyInput extends React.Component {
   }
 
   render() {
+    const {help, validationState} = this.state;
     return (
       <form>
-        <FormGroup validationState={this.state.validationState}>
+        <FormGroup validationState={validationState}>
           <ControlLabel>Recipient&apos;s Public Key</ControlLabel>
           <InputGroup className="sl-input">
             <FormControl
@@ -97,7 +98,7 @@ class PublicKeyInput extends React.Component {
             />
             <FormControl.Feedback />
           </InputGroup>
-          <HelpBlock>{this.identityText()}</HelpBlock>
+          <HelpBlock>{help}</HelpBlock>
         </FormGroup>
       </form>
     );
