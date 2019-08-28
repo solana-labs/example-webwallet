@@ -31,8 +31,6 @@ import Button from './components/Button';
 import {Account} from './account';
 import {Settings} from './settings';
 
-const LAMPORT_SOL_RATIO = 0.0000000000582;
-
 const alertIcon = {
   danger: <WarnIcon fill="#F71EF4" />,
   warning: <WarnIcon fill="#FFC617 " />,
@@ -637,11 +635,11 @@ export class Wallet extends React.Component {
   }
 
   renderBalance() {
-    const solBalance = (this.state.balance * LAMPORT_SOL_RATIO).toFixed(4);
-    if (solBalance < 0.0001) {
-      return <span>{solBalance}...</span>;
+    const balance = this.state.balance;
+    if (balance > 10000) {
+      return <span>{balance}...</span>;
     } else {
-      return <span>{parseFloat(solBalance)}</span>;
+      return <span>{balance}</span>;
     }
   }
 
@@ -658,7 +656,7 @@ export class Wallet extends React.Component {
     const airdropDisabled = this.state.balance >= 1000;
     const balanceTooltip = (
       <Tooltip id="refresh">
-        {(this.state.balance * LAMPORT_SOL_RATIO).toFixed(20)}
+        {this.state.balance}
       </Tooltip>
     );
     return (
@@ -682,7 +680,7 @@ export class Wallet extends React.Component {
         </div>
         <div className="balance">
           <div className="balance-val">{this.renderBalance()}</div>
-          <div className="balance-ttl">sols</div>
+          <div className="balance-ttl">lamports</div>
           <OverlayTrigger placement="top" overlay={balanceTooltip}>
             <InfoIcon />
           </OverlayTrigger>
