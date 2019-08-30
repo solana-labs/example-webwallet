@@ -55,7 +55,7 @@ window.addEventListener('message', (e) => {
   }
 });
 ```
-4. Send an `'addFunds'` request
+4. Send an `'addFunds'` or `'confirmTX'` request
 ```js
 walletWindow.postMessage({
   method: 'addFunds',
@@ -65,9 +65,21 @@ walletWindow.postMessage({
     network: 'https://api.beta.testnet.solana.com',
   },
 }, WALLET_URL);
+
+or 
+
+walletWindow.postMessage({
+  method: 'confirmTX',
+  params: {
+    description: "Description of tx",
+    format: 'JSON',
+    transaction: "Your tx in JSON",
+    network: 'https://api.beta.testnet.solana.com',
+  },
+}, WALLET_URL);
 ```
-5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature
-```js
+5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature. And listen for an `'confirmTXResponse'` event which will include the transaction signature
+```js 
 window.addEventListener('message', (e) => {
   // ...
   switch (e.data.method) {
@@ -77,6 +89,11 @@ window.addEventListener('message', (e) => {
     }
     case 'addFundsResponse': {
       const {amount, signature} = e.data.params;
+      // ...
+      break;
+    }
+    case 'confirmTXResponse': {
+      const {signature} = e.data.params;
       // ...
       break;
     }
