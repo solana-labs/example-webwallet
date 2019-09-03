@@ -131,6 +131,12 @@ class TokenInput extends React.Component {
     this.handleChange(this.props.defaultValue || '');
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.maxValue !== prevProps.maxValue) {
+      this.handleChange(this.state.value);
+    }
+  }
+
   getValidationState(value) {
     if (value.length === 0) {
       return [null, ''];
@@ -579,7 +585,16 @@ export class Wallet extends React.Component {
       <div>
         {busyModal}
         {settingsModal}
-        {this.state.requestMode && this.renderTokenRequestPanel()}
+        {this.state.requestMode
+          ? this.renderTokenRequestPanel()
+          : this.renderMainPanel()}
+      </div>
+    );
+  }
+
+  renderMainPanel() {
+    return (
+      <React.Fragment>
         <div className="container">
           <DismissibleMessages
             messages={this.state.messages}
@@ -631,7 +646,7 @@ export class Wallet extends React.Component {
           </Row>
         </Grid>
         <div className="container">{this.renderPanels()}</div>
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -645,13 +660,9 @@ export class Wallet extends React.Component {
   }
 
   renderAccountBalance = () => {
-    const { balance } = this.state;
+    const {balance} = this.state;
     const airdropDisabled = balance >= 1000;
-    const balanceTooltip = (
-      <Tooltip id="refresh">
-        {this.state.balance}
-      </Tooltip>
-    );
+    const balanceTooltip = <Tooltip id="refresh">{this.state.balance}</Tooltip>;
     return (
       <React.Fragment>
         <div className="balance-header">
@@ -699,6 +710,12 @@ export class Wallet extends React.Component {
                 </button>
               </div>
             </Col>
+          </Row>
+          <Row>
+            <DismissibleMessages
+              messages={this.state.messages}
+              onDismiss={index => this.dismissMessage(index)}
+            />
           </Row>
           <Row>
             <Col xs={12}>
@@ -750,7 +767,7 @@ export class Wallet extends React.Component {
           <Row>
             <Col xs={12} md={5}>
               <TokenInput
-                key={this.state.requestedAmount + this.state.balance}
+                key={this.state.requestedAmount}
                 maxValue={this.state.balance}
                 defaultValue={this.state.requestedAmount}
                 onAmount={amount => this.setRecipientAmount(amount)}
@@ -791,8 +808,6 @@ export class Wallet extends React.Component {
             <Row className="show-grid">
               <Col className="mb25-xs" xs={12} md={5}>
                 <TokenInput
-                  key={this.state.balance}
-                  defaultValue={this.state.recipientAmount}
                   maxValue={this.state.balance}
                   onAmount={amount => this.setRecipientAmount(amount)}
                 />
