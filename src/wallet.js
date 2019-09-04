@@ -20,6 +20,7 @@ import copy from 'copy-to-clipboard';
 import * as web3 from '@solana/web3.js';
 
 import Loader from './components/Loader';
+import NetworkSelect from './components/NetworkSelect';
 import RefreshIcon from './icons/refresh.svg';
 import SendIcon from './icons/send.svg';
 import FileCopyIcon from './icons/file-copy.svg';
@@ -592,7 +593,14 @@ export class Wallet extends React.Component {
     );
   }
 
+  setNetworkEntryPoint = async val => {
+    this.props.store.setNetworkEntryPoint(val);
+    await this.web3sol.getBalance(this.state.account.publicKey);
+    this.addInfo(`Changed wallet network to ${val}`);
+  };
   renderMainPanel() {
+    const {store} = this.props;
+    const {networkEntryPoint} = store;
     return (
       <React.Fragment>
         <div className="container">
@@ -606,6 +614,13 @@ export class Wallet extends React.Component {
             <Col xs={12}>
               <div className="account-header">
                 <h2 className="decor">account information</h2>
+                <div className="network-select">
+                  <div className="network-select__title">Network:</div>
+                  <NetworkSelect
+                    value={networkEntryPoint}
+                    onChange={this.setNetworkEntryPoint}
+                  />
+                </div>
                 <button onClick={() => this.setState({settingsModal: true})}>
                   <span>
                     <GearIcon /> <span>Settings</span>
@@ -694,6 +709,9 @@ export class Wallet extends React.Component {
   };
 
   renderTokenRequestPanel() {
+    const { store } = this.props;
+    const { networkEntryPoint } = store;
+
     return (
       <div className="request-modal">
         <Grid>
@@ -711,16 +729,25 @@ export class Wallet extends React.Component {
               </div>
             </Col>
           </Row>
-          <Row>
-            <DismissibleMessages
-              messages={this.state.messages}
-              onDismiss={index => this.dismissMessage(index)}
-            />
-          </Row>
+        </Grid>
+        <div className="request-modal__alert">
+          <DismissibleMessages
+            messages={this.state.messages}
+            onDismiss={index => this.dismissMessage(index)}
+          />
+        </div>
+        <Grid>
           <Row>
             <Col xs={12}>
               <div className="account-header">
                 <h4>account information</h4>
+                <div className="network-select">
+                  <div className="network-select__title">Network:</div>
+                  <NetworkSelect
+                    value={networkEntryPoint}
+                    onChange={this.setNetworkEntryPoint}
+                  />
+                </div>
                 <button onClick={() => this.setState({settingsModal: true})}>
                   <span>
                     <GearIcon /> <span>Settings</span>
