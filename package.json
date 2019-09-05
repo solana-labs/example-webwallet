@@ -40,7 +40,7 @@
     "prettier": "^1.14.3",
     "react-hot-loader": "^4.3.4",
     "sass-loader": "^7.2.0",
-    "terser-webpack-plugin": "^1.4.1",
+    "terser-webpack-plugin": "^2.0.0",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
