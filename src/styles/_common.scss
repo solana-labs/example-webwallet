@@ -71,7 +71,6 @@ hr {
   }
   .account-header {
     margin-bottom: 0;
-    flex-wrap: wrap;
     button {
       border: none;
       padding: 0 7px;
@@ -93,5 +92,10 @@ hr {
 .btns {
   & > *:not(:last-child) {
     margin-right: 15px;
+  }
+}
+@media (max-width: 992px) {
+  .account-header {
+    flex-wrap: wrap;
   }
 }
