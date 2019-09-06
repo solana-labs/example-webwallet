@@ -887,7 +887,7 @@ export class Wallet extends React.Component {
                     Confirm
                   </Button>
                   {typeof this.state.transactionConfirmed === 'boolean' ? (
-                    <b>
+                    <b className="ml20">
                       {this.state.transactionConfirmed
                         ? 'CONFIRMED'
                         : 'NOT CONFIRMED'}
