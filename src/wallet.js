@@ -27,7 +27,6 @@ import FileCopyIcon from './icons/file-copy.svg';
 import GearIcon from './icons/gear.svg';
 import CloseIcon from './icons/close.svg';
 import WarnIcon from './icons/warn.svg';
-import InfoIcon from './icons/info.svg';
 import Button from './components/Button';
 import {Account} from './account';
 import {Settings} from './settings';
@@ -630,10 +629,10 @@ export class Wallet extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col xs={12} md={5}>
+            <Col xs={12} md={4}>
               <Well>{this.renderAccountBalance()}</Well>
             </Col>
-            <Col xs={12} md={7}>
+            <Col xs={12} md={8}>
               <Well>
                 <FormGroup>
                   <ControlLabel>Account Public Key</ControlLabel>
@@ -677,7 +676,6 @@ export class Wallet extends React.Component {
   renderAccountBalance = () => {
     const {balance} = this.state;
     const airdropDisabled = balance >= 1000;
-    const balanceTooltip = <Tooltip id="refresh">{this.state.balance}</Tooltip>;
     return (
       <React.Fragment>
         <div className="balance-header">
@@ -700,9 +698,6 @@ export class Wallet extends React.Component {
         <div className="balance">
           <div className="balance-val">{balance}</div>
           <div className="balance-ttl">lamports</div>
-          <OverlayTrigger placement="top" overlay={balanceTooltip}>
-            <InfoIcon />
-          </OverlayTrigger>
         </div>
       </React.Fragment>
     );
