@@ -428,7 +428,7 @@ export class Wallet extends React.Component {
     });
   }
 
-  onConfirmTransactionRequest(params, origin) {
+  onSendCustomTransactionRequest(params, origin) {
     if (!params.format || !params.network || !params.transaction) {
       if (!params.network) this.addError(`Request did not specify a network`);
       if (!params.format) this.addError(`Request did not specify a transaction format`);
@@ -494,7 +494,7 @@ export class Wallet extends React.Component {
             this.onAddFunds(e.data.params, e.currentTarget.origin);
             return true;
           case 'sendCustomTransaction':
-            this.onConfirmTransactionRequest(e.data.params, e.currentTarget.origin);
+            this.onSendCustomTransactionRequest(e.data.params, e.currentTarget.origin);
             return true;
         }
       }
@@ -749,13 +749,13 @@ export class Wallet extends React.Component {
       if (this.state.requestedPublicKey) {
         return this.renderTokenRequestPanel();
       } else {
-        return this.renderConfirmTransactionRequestPanel();
+        return this.renderSendCustomTransactionRequestPanel();
       }
     } else {
       return (
         <React.Fragment>
           {this.renderSendTokensPanel()}
-          {this.renderSendCustomTransactionPanel()}
+          {this.renderConfirmTxPanel()}
         </React.Fragment>
       );
     }
@@ -797,10 +797,10 @@ export class Wallet extends React.Component {
     );
   }
 
-  renderConfirmTransactionRequestPanel() {
+  renderSendCustomTransactionRequestPanel() {
     return (
       <Panel>
-        <Panel.Heading>Confirm transaction Request</Panel.Heading>
+        <Panel.Heading>Send custom transaction Request</Panel.Heading>
         <Panel.Body>
           <div>
             {this.state.description.split('\n').map((i, key) => {
@@ -874,7 +874,7 @@ export class Wallet extends React.Component {
     );
   }
 
-  renderSendCustomTransactionPanel() {
+  renderConfirmTxPanel() {
     const confirmDisabled = this.state.confirmationSignature === null;
     return (
       <Panel>
