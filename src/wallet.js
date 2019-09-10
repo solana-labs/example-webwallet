@@ -493,7 +493,7 @@ export class Wallet extends React.Component {
           case 'addFunds':
             this.onAddFunds(e.data.params, e.currentTarget.origin);
             return true;
-          case 'confirmTX':
+          case 'sendCustomTransaction':
             this.onConfirmTransactionRequest(e.data.params, e.currentTarget.origin);
             return true;
         }
@@ -589,11 +589,11 @@ export class Wallet extends React.Component {
         this.setState({
           balance: await this.web3sol.getBalance(this.state.account.publicKey),
         });
-        this.postWindowMessage('confirmTXResponse', {err: true});
+        this.postWindowMessage('sendCustomTransactionResponse', {err: true});
         throw err;
       }
 
-      this.postWindowMessage('confirmTXResponse', {signature});
+      this.postWindowMessage('sendCustomTransactionResponse', {signature});
       if (closeOnSuccess) {
         window.close();
       } else {
@@ -755,7 +755,7 @@ export class Wallet extends React.Component {
       return (
         <React.Fragment>
           {this.renderSendTokensPanel()}
-          {this.renderConfirmTxPanel()}
+          {this.renderSendCustomTransactionPanel()}
         </React.Fragment>
       );
     }
@@ -874,7 +874,7 @@ export class Wallet extends React.Component {
     );
   }
 
-  renderConfirmTxPanel() {
+  renderSendCustomTransactionPanel() {
     const confirmDisabled = this.state.confirmationSignature === null;
     return (
       <Panel>
