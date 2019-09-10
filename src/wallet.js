@@ -20,6 +20,7 @@ import copy from 'copy-to-clipboard';
 import * as web3 from '@solana/web3.js';
 
 import Loader from './components/Loader';
+import NetworkSelect from './components/NetworkSelect';
 import RefreshIcon from './icons/refresh.svg';
 import SendIcon from './icons/send.svg';
 import FileCopyIcon from './icons/file-copy.svg';
@@ -35,10 +36,20 @@ const alertIcon = {
   warning: <WarnIcon fill="#FFC617 " />,
 };
 
+const copyTooltip = (
+  <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
+);
+const refreshBalanceTooltip = (
+  <Tooltip id="refresh">Refresh account balance</Tooltip>
+);
+
+const airdropTooltip = <Tooltip id="airdrop">Request an airdrop</Tooltip>;
+
 class PublicKeyInput extends React.Component {
   state = {
     value: '',
     validationState: null,
+    help: '',
   };
 
   componentDidMount() {
@@ -47,30 +58,29 @@ class PublicKeyInput extends React.Component {
 
   getValidationState(value) {
     const length = value.length;
-    if (length === 44) {
-      if (value.match(/^[A-Za-z0-9]+$/)) {
-        return 'success';
-      }
-      return 'error';
-    } else if (length > 44) {
-      return 'error';
-    } else if (length > 0) {
-      return 'warning';
+    if (length === 0) {
+      return [null, ''];
     }
-    return null;
+
+    try {
+      new web3.PublicKey(value);
+      return ['success', this.identityText(value)];
+    } catch (err) {
+      return ['error', 'Invalid Public Key'];
+    }
   }
 
   handleChange(value) {
-    const validationState = this.getValidationState(value);
-    this.setState({value, validationState});
+    const [validationState, help] = this.getValidationState(value);
+    this.setState({value, validationState, help});
     this.props.onPublicKey(validationState === 'success' ? value : null);
   }
 
-  identityText() {
-    if (this.props.identity) {
+  identityText(value) {
+    if (this.props.identity && value === this.props.defaultValue) {
       const {name, keybaseUsername} = this.props.identity;
       if (keybaseUsername) {
-        const verifyUrl = `https://keybase.pub/${keybaseUsername}/solana/validator-${this.state.value}`;
+        const verifyUrl = `https://keybase.pub/${keybaseUsername}/solana/validator-${value}`;
         return (
           <span>
             {`Identified "${name}" who can be verified on `}
@@ -84,9 +94,10 @@ class PublicKeyInput extends React.Component {
   }
 
   render() {
+    const {help, validationState} = this.state;
     return (
       <form>
-        <FormGroup validationState={this.state.validationState}>
+        <FormGroup validationState={validationState}>
           <ControlLabel>Recipient&apos;s Public Key</ControlLabel>
           <InputGroup className="sl-input">
             <FormControl
@@ -97,7 +108,7 @@ class PublicKeyInput extends React.Component {
             />
             <FormControl.Feedback />
           </InputGroup>
-          <HelpBlock>{this.identityText()}</HelpBlock>
+          <HelpBlock>{help}</HelpBlock>
         </FormGroup>
       </form>
     );
@@ -118,6 +129,12 @@ class TokenInput extends React.Component {
 
   componentDidMount() {
     this.handleChange(this.props.defaultValue || '');
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.maxValue !== prevProps.maxValue) {
+      this.handleChange(this.state.value);
+    }
   }
 
   getValidationState(value) {
@@ -503,6 +520,10 @@ export class Wallet extends React.Component {
     this.postWindowMessage('ready');
   }
 
+  closeRequestModal = () => {
+    window.close();
+  };
+
   componentDidMount() {
     this.props.store.onChange(this.onStoreChange);
     this.onStoreChange();
@@ -633,14 +654,6 @@ export class Wallet extends React.Component {
       return <Account store={this.props.store} />;
     }
 
-    const copyTooltip = (
-      <Tooltip id="clipboard">Copy public key to clipboard</Tooltip>
-    );
-    const refreshBalanceTooltip = (
-      <Tooltip id="refresh">Refresh account balance</Tooltip>
-    );
-    const airdropTooltip = <Tooltip id="airdrop">Request an airdrop</Tooltip>;
-
     const busyModal = this.state.busyModal ? (
       <BusyModal
         show
@@ -657,12 +670,27 @@ export class Wallet extends React.Component {
       />
     ) : null;
 
-    const airdropDisabled = this.state.balance >= 1000;
-
     return (
       <div>
         {busyModal}
         {settingsModal}
+        {this.state.requestMode
+          ? (this.state.requestedPublicKey ? this.renderTokenRequestPanel() : this.renderSendCustomTransactionRequestPanel())
+          : this.renderMainPanel()}
+      </div>
+    );
+  }
+
+  setNetworkEntryPoint = async val => {
+    this.props.store.setNetworkEntryPoint(val);
+    await this.web3sol.getBalance(this.state.account.publicKey);
+    this.addInfo(`Changed wallet network to ${val}`);
+  };
+  renderMainPanel() {
+    const {store} = this.props;
+    const {networkEntryPoint} = store;
+    return (
+      <React.Fragment>
         <div className="container">
           <DismissibleMessages
             messages={this.state.messages}
@@ -674,6 +702,13 @@ export class Wallet extends React.Component {
             <Col xs={12}>
               <div className="account-header">
                 <h2 className="decor">account information</h2>
+                <div className="network-select">
+                  <div className="network-select__title">Network:</div>
+                  <NetworkSelect
+                    value={networkEntryPoint}
+                    onChange={this.setNetworkEntryPoint}
+                  />
+                </div>
                 <button onClick={() => this.setState({settingsModal: true})}>
                   <span>
                     <GearIcon /> <span>Settings</span>
@@ -683,36 +718,10 @@ export class Wallet extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col xs={12} md={5}>
-              <Well>
-                <h4>Account Balance</h4>
-                <div className="balance">
-                  <div className="balance-val">{this.state.balance}</div>
-                  <div className="balance-ttl">Lamports</div>
-                  <OverlayTrigger
-                    placement="top"
-                    overlay={refreshBalanceTooltip}
-                  >
-                    <button
-                      className="icon-btn"
-                      onClick={() => this.refreshBalance()}
-                    >
-                      <RefreshIcon />
-                    </button>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
-                    <button
-                      className="icon-btn"
-                      disabled={airdropDisabled}
-                      onClick={() => this.requestAirdrop()}
-                    >
-                      <SendIcon />
-                    </button>
-                  </OverlayTrigger>
-                </div>
-              </Well>
+            <Col xs={12} md={4}>
+              <Well>{this.renderAccountBalance()}</Well>
             </Col>
-            <Col xs={12} md={7}>
+            <Col xs={12} md={8}>
               <Well>
                 <FormGroup>
                   <ControlLabel>Account Public Key</ControlLabel>
@@ -740,60 +749,165 @@ export class Wallet extends React.Component {
           </Row>
         </Grid>
         <div className="container">{this.renderPanels()}</div>
-      </div>
+      </React.Fragment>
     );
   }
 
   renderPanels() {
-    if (this.state.requestMode) {
-      if (this.state.requestedPublicKey) {
-        return this.renderTokenRequestPanel();
-      } else {
-        return this.renderSendCustomTransactionRequestPanel();
-      }
-    } else {
-      return (
-        <React.Fragment>
-          {this.renderSendTokensPanel()}
-          {this.renderConfirmTxPanel()}
-        </React.Fragment>
-      );
-    }
+    return (
+      <React.Fragment>
+        {this.renderSendTokensPanel()}
+        {this.renderConfirmTxPanel()}
+      </React.Fragment>
+    );
   }
 
-  renderTokenRequestPanel() {
+  renderAccountBalance = () => {
+    const {balance} = this.state;
+    const airdropDisabled = balance >= 1000;
     return (
-      <Panel>
-        <Panel.Heading>Token Request</Panel.Heading>
-        <Panel.Body>
-          <PublicKeyInput
-            key={this.state.requestedPublicKey}
-            defaultValue={this.state.requestedPublicKey || ''}
-            onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
-            identity={this.state.recipientIdentity}
-          />
-          <TokenInput
-            key={this.state.requestedAmount + this.state.balance}
-            maxValue={this.state.balance}
-            defaultValue={this.state.requestedAmount}
-            onAmount={amount => this.setRecipientAmount(amount)}
-          />
-          <div className="btns">
-            <Button
-              disabled={this.sendDisabled()}
-              onClick={() => this.sendTransaction(false)}
+      <React.Fragment>
+        <div className="balance-header">
+          <div className="balance-title">Account Balance</div>
+          <OverlayTrigger placement="top" overlay={refreshBalanceTooltip}>
+            <button className="icon-btn" onClick={() => this.refreshBalance()}>
+              <RefreshIcon />
+            </button>
+          </OverlayTrigger>
+          <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
+            <button
+              className="icon-btn"
+              disabled={airdropDisabled}
+              onClick={() => this.requestAirdrop()}
             >
-              Send
-            </Button>
-            <Button
-              disabled={this.sendDisabled()}
-              onClick={() => this.sendTransaction(true)}
-            >
-              Send & Close
-            </Button>
-          </div>
-        </Panel.Body>
-      </Panel>
+              <SendIcon />
+            </button>
+          </OverlayTrigger>
+        </div>
+        <div className="balance">
+          <div className="balance-val">{balance}</div>
+          <div className="balance-ttl">lamports</div>
+        </div>
+      </React.Fragment>
+    );
+  };
+
+  renderTokenRequestPanel() {
+    const { store } = this.props;
+    const { networkEntryPoint } = store;
+
+    return (
+      <div className="request-modal">
+        <Grid>
+          <Row>
+            <Col xs={12}>
+              <div className="request-modal__header">
+                <h2>Token Request</h2>
+                <button
+                  className="request-modal__close"
+                  type="button"
+                  onClick={this.closeRequestModal}
+                >
+                  <CloseIcon width={19} height={19} fill="#fff" />
+                </button>
+              </div>
+            </Col>
+          </Row>
+        </Grid>
+        <div className="request-modal__alert">
+          <DismissibleMessages
+            messages={this.state.messages}
+            onDismiss={index => this.dismissMessage(index)}
+          />
+        </div>
+        <Grid>
+          <Row>
+            <Col xs={12}>
+              <div className="account-header">
+                <h4>account information</h4>
+                <div className="network-select">
+                  <div className="network-select__title">Network:</div>
+                  <NetworkSelect
+                    value={networkEntryPoint}
+                    onChange={this.setNetworkEntryPoint}
+                  />
+                </div>
+                <button onClick={() => this.setState({settingsModal: true})}>
+                  <span>
+                    <GearIcon /> <span>Settings</span>
+                  </span>
+                </button>
+              </div>
+            </Col>
+          </Row>
+          <Row className="request-modal__row">
+            <Col xs={12} md={4}>
+              {this.renderAccountBalance()}
+            </Col>
+            <Col xs={12} md={7} mdOffset={1}>
+              <FormGroup>
+                <ControlLabel>Account Public Key</ControlLabel>
+                <InputGroup className="sl-input">
+                  <FormControl
+                    readOnly
+                    type="text"
+                    size="21"
+                    value={this.state.account.publicKey}
+                  />
+                  <InputGroup.Button>
+                    <OverlayTrigger placement="bottom" overlay={copyTooltip}>
+                      <button
+                        className="icon-btn"
+                        onClick={() => this.copyPublicKey()}
+                      >
+                        <FileCopyIcon />
+                      </button>
+                    </OverlayTrigger>
+                  </InputGroup.Button>
+                </InputGroup>
+              </FormGroup>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <div className="account-header">
+                <h4>Send Tokens</h4>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} md={5}>
+              <TokenInput
+                key={this.state.requestedAmount}
+                maxValue={this.state.balance}
+                defaultValue={this.state.requestedAmount}
+                onAmount={amount => this.setRecipientAmount(amount)}
+              />
+            </Col>
+            <Col xs={12} md={7}>
+              <PublicKeyInput
+                key={this.state.requestedPublicKey}
+                defaultValue={this.state.requestedPublicKey || ''}
+                onPublicKey={publicKey => this.setRecipientPublicKey(publicKey)}
+                identity={this.state.recipientIdentity}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <div className="request-modal__btns">
+                <Button
+                  disabled={this.sendDisabled()}
+                  onClick={() => this.sendTransaction(true)}
+                >
+                  Send
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Grid>
+        <div className="container">{this.renderPanels()}</div>
+      </div>
     );
   }
 
@@ -841,8 +955,6 @@ export class Wallet extends React.Component {
             <Row className="show-grid">
               <Col className="mb25-xs" xs={12} md={5}>
                 <TokenInput
-                  key={this.state.balance}
-                  defaultValue={this.state.recipientAmount}
                   maxValue={this.state.balance}
                   onAmount={amount => this.setRecipientAmount(amount)}
                 />
@@ -900,7 +1012,7 @@ export class Wallet extends React.Component {
                     Confirm
                   </Button>
                   {typeof this.state.transactionConfirmed === 'boolean' ? (
-                    <b>
+                    <b className="ml20">
                       {this.state.transactionConfirmed
                         ? 'CONFIRMED'
                         : 'NOT CONFIRMED'}

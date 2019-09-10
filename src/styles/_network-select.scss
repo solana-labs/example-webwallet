@@ -1,0 +1,55 @@
+.network-select {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 30px;
+  @media (max-width: 992px) {
+    order: 3;
+    margin-right: 0;
+    margin-left: 0;
+    width: 100%;
+  }
+  &__title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-right: 10px;
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+  .form-group {
+    margin-bottom: 0;
+    .input-group {
+      margin: 0;
+    }
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
+  .dropdown {
+    border: 1px solid $primary;
+    padding-left: 1px;
+  }
+  .dropdown-toggle {
+    @media (max-width: 768px) {
+      width: 100%;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      .caret {
+        margin-left: auto;
+      }
+    }
+  }
+  @media (max-width: 768px) {
+    .dropdown,
+    .sl-input {
+      width: 100%;
+    }
+  }
+  .sl-input {
+    &::before {
+      display: none;
+    }
+  }
+}

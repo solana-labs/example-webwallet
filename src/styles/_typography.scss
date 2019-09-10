@@ -28,9 +28,12 @@ h2 {
 h4 {
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: $light-grey;
+  color: $white;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin: 0;
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
 }
 
 h5 {

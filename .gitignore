@@ -1,6 +1,7 @@
 /node_modules
 /dist/*bundle.js
 /dist/*worker.js
+/dist/main.css
 *.sw[po]
 /store
 .idea
