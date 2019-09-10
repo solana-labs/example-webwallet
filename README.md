@@ -55,7 +55,7 @@ window.addEventListener('message', (e) => {
   }
 });
 ```
-4. Send an `'addFunds'` or `'confirmTX'` request
+4. Send an `'addFunds'` or `'sendCustomTransaction'` request
 ```js
 walletWindow.postMessage({
   method: 'addFunds',
@@ -69,16 +69,47 @@ walletWindow.postMessage({
 or 
 
 walletWindow.postMessage({
-  method: 'confirmTX',
+  method: 'sendCustomTransaction',
   params: {
-    description: "Description of tx",
+    description: "Description of transaction",
     format: 'JSON',
-    transaction: "Your tx in JSON",
+    transaction: `[
+                      {
+                          "keys": [
+                              {
+                                  "pubkey": "9dpzQrAWRJet26mFt2pt4PXGv9J3uUj7onSTBuJYXXdZ",
+                                  "isSigner": true,
+                                  "isDebitable": true
+                              },
+                          ],
+                          "programId": "11111111111111111111111111111111",
+                          "data": "000000003c00000000000000a90000000000000038ca84e115c5fec729ff33b77202760da632a30633f95c529a4c223c3ed6142a"
+                      },
+                      {
+                          "keys": [
+                              {
+                                  "pubkey": "9dpzQrAWRJet26mFt2pt4PXGv9J3uUj7onSTBuJYXXdZ",
+                                  "isSigner": true,
+                                  "isDebitable": false
+                              },
+                              {
+                                  "pubkey": "Sysca11Current11111111111111111111111111111",
+                                  "isSigner": false,
+                                  "isDebitable": false
+                              }
+                          ],
+                          "programId": "4pgwX1zWz8NaegwTcH1YmntCdVn7qdXwZkxqgDN7P6cR",
+                          "data": "010000000a00000000000000320000000000000000000000000000000000000000000000"
+                      }
+                  ]`,
     network: 'https://api.beta.testnet.solana.com',
   },
 }, WALLET_URL);
 ```
-5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature. And listen for an `'confirmTXResponse'` event which will include the transaction signature
+
+The `sendCustomTransaction` request accepts a transaction in JSON format containing only the `TransactionInstruction` set. Field `data` must be in HEX, `programId` and `pubkey` must be in Base58
+
+5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature. And listen for an `'sendCustomTransactionResponse'` event which will include the transaction signature
 ```js 
 window.addEventListener('message', (e) => {
   // ...
@@ -92,7 +123,7 @@ window.addEventListener('message', (e) => {
       // ...
       break;
     }
-    case 'confirmTXResponse': {
+    case 'sendCustomTransactionResponse': {
       const {signature} = e.data.params;
       // ...
       break;
