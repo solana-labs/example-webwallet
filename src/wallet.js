@@ -31,13 +31,12 @@ import {Account} from './account';
 import {Settings} from './settings';
 
 const alertIcon = {
-  danger: <WarnIcon fill="#F71EF4"/>,
-  warning: <WarnIcon fill="#FFC617 "/>,
+  danger: <WarnIcon fill="#F71EF4" />,
+  warning: <WarnIcon fill="#FFC617 " />,
 };
 
 class PublicKeyInput extends React.Component {
   state = {
-
     value: '',
     validationState: null,
   };
@@ -96,7 +95,7 @@ class PublicKeyInput extends React.Component {
               placeholder="Enter the public key of the recipient"
               onChange={e => this.handleChange(e.target.value)}
             />
-            <FormControl.Feedback/>
+            <FormControl.Feedback />
           </InputGroup>
           <HelpBlock>{this.identityText()}</HelpBlock>
         </FormGroup>
@@ -104,7 +103,6 @@ class PublicKeyInput extends React.Component {
     );
   }
 }
-
 PublicKeyInput.propTypes = {
   onPublicKey: PropTypes.func,
   defaultValue: PropTypes.string,
@@ -153,7 +151,7 @@ class TokenInput extends React.Component {
               placeholder="Enter amount to transfer"
               onChange={e => this.handleChange(e.target.value)}
             />
-            <FormControl.Feedback/>
+            <FormControl.Feedback />
           </InputGroup>
           <HelpBlock>{this.state.help}</HelpBlock>
         </FormGroup>
@@ -161,7 +159,6 @@ class TokenInput extends React.Component {
     );
   }
 }
-
 TokenInput.propTypes = {
   onAmount: PropTypes.func,
   defaultValue: PropTypes.string,
@@ -208,14 +205,13 @@ class SignatureInput extends React.Component {
               placeholder="Enter a transaction signature"
               onChange={e => this.handleChange(e)}
             />
-            <FormControl.Feedback/>
+            <FormControl.Feedback />
           </InputGroup>
         </FormGroup>
       </form>
     );
   }
 }
-
 SignatureInput.propTypes = {
   onSignature: PropTypes.func,
 };
@@ -228,7 +224,7 @@ class DismissibleMessages extends React.Component {
           {alertIcon[style]}
           <span>{msg}</span>
           <a href="#" onClick={() => this.props.onDismiss(index)}>
-            <CloseIcon fill="#fff" width={19} height={19}/>
+            <CloseIcon fill="#fff" width={19} height={19} />
           </a>{' '}
         </Alert>
       );
@@ -236,7 +232,6 @@ class DismissibleMessages extends React.Component {
     return <div>{messages}</div>;
   }
 }
-
 DismissibleMessages.propTypes = {
   messages: PropTypes.array,
   onDismiss: PropTypes.func,
@@ -261,15 +256,14 @@ class BusyModal extends React.Component {
         </Modal.Header>
         <Modal.Body>
           {this.props.text}
-          <br/>
-          <br/>
-          <Loader/>
+          <br />
+          <br />
+          <Loader />
         </Modal.Body>
       </Modal>
     );
   }
 }
-
 BusyModal.propTypes = {
   title: PropTypes.string,
   text: PropTypes.string,
@@ -290,13 +284,12 @@ class SettingsModal extends React.Component {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Settings store={this.props.store} onHide={this.props.onHide}/>
+          <Settings store={this.props.store} onHide={this.props.onHide} />
         </Modal.Body>
       </Modal>
     );
   }
 }
-
 SettingsModal.propTypes = {
   onHide: PropTypes.func,
   store: PropTypes.object,
@@ -637,7 +630,7 @@ export class Wallet extends React.Component {
 
   render() {
     if (!this.state.account) {
-      return <Account store={this.props.store}/>;
+      return <Account store={this.props.store} />;
     }
 
     const copyTooltip = (
@@ -683,7 +676,7 @@ export class Wallet extends React.Component {
                 <h2 className="decor">account information</h2>
                 <button onClick={() => this.setState({settingsModal: true})}>
                   <span>
-                    <GearIcon/> <span>Settings</span>
+                    <GearIcon /> <span>Settings</span>
                   </span>
                 </button>
               </div>
@@ -704,7 +697,7 @@ export class Wallet extends React.Component {
                       className="icon-btn"
                       onClick={() => this.refreshBalance()}
                     >
-                      <RefreshIcon/>
+                      <RefreshIcon />
                     </button>
                   </OverlayTrigger>
                   <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
@@ -713,7 +706,7 @@ export class Wallet extends React.Component {
                       disabled={airdropDisabled}
                       onClick={() => this.requestAirdrop()}
                     >
-                      <SendIcon/>
+                      <SendIcon />
                     </button>
                   </OverlayTrigger>
                 </div>
@@ -736,7 +729,7 @@ export class Wallet extends React.Component {
                           className="icon-btn"
                           onClick={() => this.copyPublicKey()}
                         >
-                          <FileCopyIcon/>
+                          <FileCopyIcon />
                         </button>
                       </OverlayTrigger>
                     </InputGroup.Button>
@@ -924,7 +917,6 @@ export class Wallet extends React.Component {
     );
   }
 }
-
 Wallet.propTypes = {
   store: PropTypes.object,
 };
