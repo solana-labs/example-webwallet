@@ -312,6 +312,12 @@ SettingsModal.propTypes = {
   store: PropTypes.object,
 };
 
+const WalletDisplayModeEnum = Object.freeze({
+  'MainPanel': 1,
+  'TokenRequest': 2,
+  'SendCustomTransactionRequest': 3
+});
+
 export class Wallet extends React.Component {
   state = {
     messages: [],
@@ -331,6 +337,7 @@ export class Wallet extends React.Component {
     unsignedTransaction: null,
     formattedUnsignedTransaction: '',
     unsignedTransactionDescription: '',
+    displayMode: WalletDisplayModeEnum.MainPanel,
   };
 
   setConfirmationSignature(confirmationSignature) {
@@ -442,6 +449,7 @@ export class Wallet extends React.Component {
       requesterOrigin: origin,
       requestedAmount: `${params.amount || ''}`,
       requestedPublicKey: params.pubkey,
+      displayMode: WalletDisplayModeEnum.TokenRequest,
     });
   }
 
@@ -491,7 +499,7 @@ export class Wallet extends React.Component {
       unsignedTransactionDescription: params.description ? params.description : '',
       unsignedTransaction: transaction,
       formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
-      requestedPublicKey: null,
+      displayMode: WalletDisplayModeEnum.SendCustomTransactionRequest,
     });
   }
 
@@ -665,13 +673,24 @@ export class Wallet extends React.Component {
       />
     ) : null;
 
+    let panel = <div/>;
+    switch (this.state.displayMode) {
+      case WalletDisplayModeEnum.MainPanel:
+        panel = this.renderMainPanel();
+        break;
+      case WalletDisplayModeEnum.TokenRequest:
+        panel = this.renderTokenRequestPanel();
+        break;
+      case WalletDisplayModeEnum.SendCustomTransactionRequest:
+        panel = this.renderSendCustomTransactionRequestPanel();
+        break;
+    }
+
     return (
       <div>
         {busyModal}
         {settingsModal}
-        {this.state.requestMode
-          ? (this.state.requestedPublicKey ? this.renderTokenRequestPanel() : this.renderSendCustomTransactionRequestPanel())
-          : this.renderMainPanel()}
+        {panel}
       </div>
     );
   }
