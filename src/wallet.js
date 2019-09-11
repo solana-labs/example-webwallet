@@ -626,12 +626,8 @@ export class Wallet extends React.Component {
 
   confirmTransaction() {
     this.runModal('Confirming Transaction', 'Please wait...', async () => {
-      const signature = await this.web3sol.sendTransaction(
-        this.state.unsignedTransaction,
-        this.state.account,
-      );
       const result = await this.web3sol.confirmTransaction(
-        signature,
+        this.state.confirmationSignature,
       );
       this.setState({
         transactionConfirmed: result,
