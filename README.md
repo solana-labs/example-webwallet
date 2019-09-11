@@ -72,7 +72,6 @@ walletWindow.postMessage({
   method: 'sendCustomTransaction',
   params: {
     description: "Description of transaction",
-    format: 'JSON',
     transaction: `[
                       {
                           "keys": [

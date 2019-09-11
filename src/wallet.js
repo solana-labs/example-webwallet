@@ -446,9 +446,8 @@ export class Wallet extends React.Component {
   }
 
   onSendCustomTransactionRequest(params, origin) {
-    if (!params.format || !params.network || !params.transaction) {
+    if (!params.network || !params.transaction) {
       if (!params.network) this.addError(`Request did not specify a network`);
-      if (!params.format) this.addError(`Request did not specify a transaction format`);
       if (!params.transaction) this.addError(`Request did not specify a transaction`);
       return;
     }
