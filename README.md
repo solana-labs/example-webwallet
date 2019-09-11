@@ -55,7 +55,8 @@ window.addEventListener('message', (e) => {
   }
 });
 ```
-4. Send an `'addFunds'` or `'sendCustomTransaction'` request
+
+4. Send an `'addFunds'` request
 ```js
 walletWindow.postMessage({
   method: 'addFunds',
@@ -65,9 +66,27 @@ walletWindow.postMessage({
     network: 'https://api.beta.testnet.solana.com',
   },
 }, WALLET_URL);
+```
 
-or 
-
+5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature.
+```js 
+window.addEventListener('message', (e) => {
+  // ...
+  switch (e.data.method) {
+    case 'ready': {
+      // ...
+      break;
+    }
+    case 'addFundsResponse': {
+      const {amount, signature} = e.data.params;
+      // ...
+      break;
+    }
+  }
+});
+```
+6. Send `'sendCustomTransaction'` request
+```js
 walletWindow.postMessage({
   method: 'sendCustomTransaction',
   params: {
@@ -108,17 +127,12 @@ walletWindow.postMessage({
 
 The `sendCustomTransaction` request accepts a transaction in JSON format containing only the `TransactionInstruction` set. Field `data` must be in HEX, `programId` and `pubkey` must be in Base58
 
-5. Listen for an `'addFundsResponse'` event which will include the amount transferred and the transaction signature. And listen for an `'sendCustomTransactionResponse'` event which will include the transaction signature
+7. Listen for an `'sendCustomTransactionResponse'` event which will include the amount transferred and the transaction signature.
 ```js 
 window.addEventListener('message', (e) => {
   // ...
   switch (e.data.method) {
     case 'ready': {
-      // ...
-      break;
-    }
-    case 'addFundsResponse': {
-      const {amount, signature} = e.data.params;
       // ...
       break;
     }
