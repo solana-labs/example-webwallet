@@ -330,7 +330,7 @@ export class Wallet extends React.Component {
     transactionConfirmed: null,
     unsignedTransaction: null,
     formattedUnsignedTransaction: '',
-    description: '',
+    unsignedTransactionDescription: '',
   };
 
   setConfirmationSignature(confirmationSignature) {
@@ -489,7 +489,7 @@ export class Wallet extends React.Component {
 
     this.setState({
       requesterOrigin: origin,
-      description: params.description ? params.description : '',
+      unsignedTransactionDescription: params.description ? params.description : '',
       unsignedTransaction: transaction,
       formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
       requestedPublicKey: null,
@@ -917,7 +917,7 @@ export class Wallet extends React.Component {
         <Panel.Heading>Send custom transaction Request</Panel.Heading>
         <Panel.Body>
           <div>
-            {this.state.description.split('\n').map((i, key) => {
+            {this.state.unsignedTransactionDescription.split('\n').map((i, key) => {
               return <p key={key}>{i}</p>;
             })}
           </div>
