@@ -906,7 +906,6 @@ export class Wallet extends React.Component {
             </Col>
           </Row>
         </Grid>
-        <div className="container">{this.renderPanels()}</div>
       </div>
     );
   }
