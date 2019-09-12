@@ -40,11 +40,11 @@ export class Account extends React.Component {
   }
 
   createAccount() {
-    this.props.store.createAccountFromSeed(this.state.generatedPhrase);
+    this.props.store.createAccountFromMnemonic(this.state.generatedPhrase);
   }
 
   recoverAccount() {
-    this.props.store.createAccountFromSeed(this.state.recoveredPhrase);
+    this.props.store.createAccountFromMnemonic(this.state.recoveredPhrase);
   }
 
   onModeChange(walletMode) {

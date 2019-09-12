@@ -33,9 +33,9 @@ export class Store {
     await this._lf.setItem('accountSecretKey', this.accountSecretKey);
   }
 
-  async createAccountFromSeed(seedPhrase) {
-    const seed = Buffer.from(bip39.mnemonicToEntropy(seedPhrase));
-    const keyPair = nacl.sign.keyPair.fromSeed(seed);
+  async createAccountFromMnemonic(mnemonic) {
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0, 32));
     this.accountSecretKey = keyPair.secretKey;
     this._ee.emit('change');
     await this._lf.setItem('accountSecretKey', keyPair.secretKey);
