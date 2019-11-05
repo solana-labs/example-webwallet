@@ -498,7 +498,7 @@ export class Wallet extends React.Component {
 
   requestAirdrop() {
     this.runModal('Requesting Airdrop', 'Please wait...', async () => {
-      await this.web3sol.requestAirdrop(this.state.account.publicKey, 1000);
+      await this.web3sol.requestAirdrop(this.state.account.publicKey, 1000000);
       this.setState({
         balance: await this.web3sol.getBalance(this.state.account.publicKey),
       });
@@ -675,7 +675,6 @@ export class Wallet extends React.Component {
 
   renderAccountBalance = () => {
     const {balance} = this.state;
-    const airdropDisabled = balance >= 1000;
     return (
       <React.Fragment>
         <div className="balance-header">
@@ -686,11 +685,7 @@ export class Wallet extends React.Component {
             </button>
           </OverlayTrigger>
           <OverlayTrigger placement="bottom" overlay={airdropTooltip}>
-            <button
-              className="icon-btn"
-              disabled={airdropDisabled}
-              onClick={() => this.requestAirdrop()}
-            >
+            <button className="icon-btn" onClick={() => this.requestAirdrop()}>
               <SendIcon />
             </button>
           </OverlayTrigger>
@@ -704,8 +699,8 @@ export class Wallet extends React.Component {
   };
 
   renderTokenRequestPanel() {
-    const { store } = this.props;
-    const { networkEntryPoint } = store;
+    const {store} = this.props;
+    const {networkEntryPoint} = store;
 
     return (
       <div className="request-modal">
