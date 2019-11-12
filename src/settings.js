@@ -64,10 +64,11 @@ export class Settings extends React.Component {
 
     try {
       const [
-        blockhash /*, feeCalculator*/,
+        blockhash, feeCalculator,
       ] = await connection.getRecentBlockhash();
       console.log('blockhash:', blockhash);
       if (this.state.checkNetworkCount <= checkNetworkCount) {
+        this.props.store.setFeeCalculator(feeCalculator);
         this.props.store.setNetworkEntryPoint(this.state.networkEntryPoint);
         this.setState({
           validationState: 'success',

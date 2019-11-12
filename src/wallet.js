@@ -407,6 +407,7 @@ export class Wallet extends React.Component {
 
   onStoreChange = async () => {
     const url = this.props.store.networkEntryPoint;
+    this.feeCalculator = this.props.store.feeCalculator;
     this.web3sol = new web3.Connection(url);
     const version = await this.web3sol.getVersion();
 
@@ -506,9 +507,17 @@ export class Wallet extends React.Component {
     }
   }
 
+  airdropAmount() {
+    if (this.feeCalculator && this.feeCalculator.targetLamportsPerSignature) {
+      return 100 * this.feeCalculator.targetLamportsPerSignature;
+    }
+    return 5000000;
+  }
+
   requestAirdrop() {
     this.runModal('Requesting Airdrop', 'Please wait...', async () => {
-      await this.web3sol.requestAirdrop(this.state.account.publicKey, 1000000);
+      const airdrop = this.airdropAmount();
+      await this.web3sol.requestAirdrop(this.state.account.publicKey, airdrop);
       this.setState({
         balance: await this.web3sol.getBalance(this.state.account.publicKey),
       });

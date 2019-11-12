@@ -16,13 +16,19 @@ export class Store {
     for (let key of [
       'networkEntryPoint',
       'accountSecretKey', // TODO: THIS KEY IS NOT STORED SECURELY!!
+      'feeCalculator',
     ]) {
       this[key] = await this._lf.getItem(key);
     }
 
     if (typeof this.networkEntryPoint !== 'string') {
-      this.networkEntryPoint = web3.testnetChannelEndpoint(process.env.CHANNEL);
+      this.setNetworkEntryPoint(web3.testnetChannelEndpoint(process.env.CHANNEL));
     }
+
+    const connection = new web3.Connection(this.networkEntryPoint);
+    connection.getRecentBlockhash().then(([, feeCalculator]) => {
+      this.setFeeCalculator(feeCalculator);
+    });
 
     this._ee.emit('change');
   }
@@ -46,6 +52,14 @@ export class Store {
       this.networkEntryPoint = value;
       this._ee.emit('change');
       await this._lf.setItem('networkEntryPoint', value);
+    }
+  }
+
+  async setFeeCalculator(feeCalculator) {
+    if (feeCalculator !== this.feeCalculator) {
+      this.feeCalculator = feeCalculator;
+      this._ee.emit('change');
+      await this._lf.setItem('feeCalculator', feeCalculator);
     }
   }
 
