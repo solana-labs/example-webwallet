@@ -17,6 +17,7 @@ import {
 } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
+import semver from 'semver';
 import * as web3 from '@solana/web3.js';
 
 import Loader from './components/Loader';
@@ -404,8 +405,17 @@ export class Wallet extends React.Component {
     this.setState({busyModal: null});
   }
 
-  onStoreChange = () => {
-    this.web3sol = new web3.Connection(this.props.store.networkEntryPoint);
+  onStoreChange = async () => {
+    const url = this.props.store.networkEntryPoint;
+    this.web3sol = new web3.Connection(url);
+    const version = await this.web3sol.getVersion();
+
+    // commitment params are only supported >= 0.21.0
+    const solanaCoreVersion = version['solana-core'].split(' ')[0];
+    if (semver.gte(solanaCoreVersion, '0.21.0')) {
+      this.web3sol = new web3.Connection(url, 'recent');
+    }
+
     let account = null;
     if (this.props.store.accountSecretKey) {
       account = new web3.Account(this.props.store.accountSecretKey);
