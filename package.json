@@ -67,7 +67,7 @@
     "react-bootstrap": "^0.33.0",
     "react-dom": "^16.4.2",
     "sass": "^1.22.9",
-    "semver": "^6.3.0",
+    "semver": "^7.0.0",
     "sha256": "^0.2.0",
     "style-loader": "^1.0.0",
     "tweetnacl": "^1.0.0"
