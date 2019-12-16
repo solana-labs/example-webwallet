@@ -3,7 +3,7 @@ import EventEmitter from 'event-emitter';
 import * as web3 from '@solana/web3.js';
 import nacl from 'tweetnacl';
 import * as bip39 from 'bip39';
-import semver from 'semver';
+import gte from 'semver/functions/gte';
 
 export class Store {
   constructor() {
@@ -54,7 +54,7 @@ export class Store {
       // commitment params are only supported >= 0.21.0
       const version = await connection.getVersion();
       const solanaCoreVersion = version['solana-core'].split(' ')[0];
-      if (semver.gte(solanaCoreVersion, '0.21.0')) {
+      if (gte(solanaCoreVersion, '0.21.0')) {
         connection = new web3.Connection(url, 'recent');
       }
     } catch (err) {
