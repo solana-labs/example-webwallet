@@ -26,7 +26,7 @@ hr {
   margin-left: 20px;
 }
 
-.account-header {
+.section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -73,7 +73,7 @@ hr {
   .text-center-xs {
     text-align: center;
   }
-  .account-header {
+  .section-header {
     margin-bottom: 0;
     button {
       border: none;
@@ -99,7 +99,7 @@ hr {
   }
 }
 @media (max-width: 992px) {
-  .account-header {
+  .section-header {
     flex-wrap: wrap;
   }
 }

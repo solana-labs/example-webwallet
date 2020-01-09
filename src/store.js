@@ -18,6 +18,7 @@ export class Store {
       'networkEntryPoint',
       'accountSecretKey', // TODO: THIS KEY IS NOT STORED SECURELY!!
       'feeCalculator',
+      'minBalanceForRentException',
     ]) {
       this[key] = await this._lf.getItem(key);
     }
@@ -49,8 +50,13 @@ export class Store {
     const url = this.networkEntryPoint;
     let connection = new web3.Connection(url);
     let feeCalculator;
+    let minBalanceForRentException;
     try {
       [, feeCalculator] = await connection.getRecentBlockhash();
+      const accountStorageOverhead = 128;
+      minBalanceForRentException = await connection.getMinimumBalanceForRentExemption(
+        accountStorageOverhead,
+      );
       // commitment params are only supported >= 0.21.0
       const version = await connection.getVersion();
       const solanaCoreVersion = version['solana-core'].split(' ')[0];
@@ -64,6 +70,7 @@ export class Store {
 
     if (url === this.networkEntryPoint) {
       this.setFeeCalculator(feeCalculator);
+      this.setMinBalanceForRentExemption(minBalanceForRentException);
       this.connection = connection;
       this._ee.emit('change');
     }
@@ -75,6 +82,14 @@ export class Store {
       await this.resetConnection();
       await this._lf.setItem('networkEntryPoint', value);
     }
+  }
+
+  async setMinBalanceForRentExemption(minBalanceForRentException) {
+    this.minBalanceForRentException = minBalanceForRentException;
+    await this._lf.setItem(
+      'minBalanceForRentException',
+      minBalanceForRentException,
+    );
   }
 
   async setFeeCalculator(feeCalculator) {

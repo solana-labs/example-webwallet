@@ -142,7 +142,7 @@ class TokenInput extends React.Component {
       return [null, ''];
     }
     if (parseInt(value) > this.props.maxValue) {
-      return ['error', 'Insufficient funds'];
+      return ['error', 'Insufficient funds, did you account for fees?'];
     }
     if (value.match(/^\d+$/)) {
       return ['success', ''];
@@ -411,10 +411,12 @@ export class Wallet extends React.Component {
       feeCalculator,
       connection,
       accountSecretKey,
+      minBalanceForRentException,
     } = this.props.store;
 
-    this.feeCalculator = feeCalculator;
     this.web3sol = connection;
+    this.feeCalculator = feeCalculator;
+    this.minBalanceForRentException = minBalanceForRentException;
 
     if (url !== this.state.url) {
       this.addWarning(`Changed wallet network to "${url}"`);
@@ -483,7 +485,7 @@ export class Wallet extends React.Component {
   };
 
   componentDidMount() {
-    this.setState({ url: this.props.store.networkEntryPoint }, () => {
+    this.setState({url: this.props.store.networkEntryPoint}, () => {
       this.props.store.onChange(this.onStoreChange);
       this.onStoreChange();
       if (window.opener) {
@@ -505,24 +507,32 @@ export class Wallet extends React.Component {
       this.runModal('Updating Account Balance', 'Please wait...', async () => {
         if (this.web3sol) {
           const url = this.state.url;
-          const balance = await this.web3sol.getBalance(this.state.account.publicKey);
+          const balance = await this.web3sol.getBalance(
+            this.state.account.publicKey,
+          );
           if (url === this.state.url) {
-            this.setState({ balance });
+            this.setState({balance});
           }
         } else {
           this.addWarning(`Encountered unexpected error, please report!`);
         }
       });
     } else {
-      this.setState({ balance: 0 });
+      this.setState({balance: 0});
     }
   }
 
   airdropAmount() {
-    if (this.feeCalculator && this.feeCalculator.targetLamportsPerSignature) {
-      return 100 * this.feeCalculator.targetLamportsPerSignature;
+    if (this.feeCalculator && this.feeCalculator.lamportsPerSignature) {
+      // Drop enough to create 100 rent exempt accounts, that should be plenty
+      return (
+        100 *
+        (this.feeCalculator.lamportsPerSignature +
+          this.minBalanceForRentException)
+      );
     }
-    return 5000000;
+    // Otherwise some large number
+    return 100000000;
   }
 
   requestAirdrop() {
@@ -640,7 +650,19 @@ export class Wallet extends React.Component {
 
   renderMainPanel() {
     const {store} = this.props;
-    const {networkEntryPoint} = store;
+    const {networkEntryPoint, feeCalculator} = store;
+    let fee;
+    if (feeCalculator && feeCalculator.lamportsPerSignature) {
+      fee = feeCalculator.lamportsPerSignature;
+    } else {
+      fee = 5000;
+    }
+    let minBalanceForRentException;
+    if (store.minBalanceForRentException) {
+      minBalanceForRentException = store.minBalanceForRentException;
+    } else {
+      minBalanceForRentException = 42;
+    }
     return (
       <React.Fragment>
         <div className="container">
@@ -650,10 +672,10 @@ export class Wallet extends React.Component {
           />
         </div>
         <Grid>
-          <Row>
-            <Col xs={12}>
-              <div className="account-header">
-                <h2 className="decor">account information</h2>
+          <Row className="show-grid">
+            <Col className="mb25-xs" xs={12} md={5}>
+              <div className="section-header">
+                <h2 className="decor">network information</h2>
                 <div className="network-select">
                   <div className="network-select__title">Network:</div>
                   <NetworkSelect
@@ -666,6 +688,18 @@ export class Wallet extends React.Component {
                     <GearIcon /> <span>Settings</span>
                   </span>
                 </button>
+              </div>
+            </Col>
+          </Row>
+          <p>Fee per Signature: {fee} lamports</p>
+          <p>
+            Minimum rent exempt balance for empty account:{' '}
+            {minBalanceForRentException} lamports
+          </p>
+          <Row className="show-grid">
+            <Col className="mb25-xs" xs={12} md={5}>
+              <div className="section-header">
+                <h2 className="decor">account information</h2>
               </div>
             </Col>
           </Row>
@@ -770,7 +804,7 @@ export class Wallet extends React.Component {
         <Grid>
           <Row>
             <Col xs={12}>
-              <div className="account-header">
+              <div className="section-header">
                 <h4>account information</h4>
                 <div className="network-select">
                   <div className="network-select__title">Network:</div>
@@ -817,7 +851,7 @@ export class Wallet extends React.Component {
           </Row>
           <Row>
             <Col xs={12}>
-              <div className="account-header">
+              <div className="section-header">
                 <h4>Send Tokens</h4>
               </div>
             </Col>
