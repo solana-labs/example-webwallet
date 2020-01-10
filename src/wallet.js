@@ -673,7 +673,7 @@ export class Wallet extends React.Component {
         </div>
         <Grid>
           <Row className="show-grid">
-            <Col className="mb25-xs" xs={12} md={5}>
+            <Col xs={12}>
               <div className="section-header">
                 <h2 className="decor">network information</h2>
                 <div className="network-select">
@@ -691,13 +691,19 @@ export class Wallet extends React.Component {
               </div>
             </Col>
           </Row>
-          <p>Fee per Signature: {fee} lamports</p>
-          <p>
-            Minimum rent exempt balance for empty account:{' '}
-            {minBalanceForRentException} lamports
-          </p>
+          <Row>
+            <Col xs={12}>
+              <Well>
+                <p>Fee per Signature: {fee} lamports</p>
+                <p>
+                  Minimum rent exempt balance for empty account:{' '}
+                  {minBalanceForRentException} lamports
+                </p>
+              </Well>
+            </Col>
+          </Row>
           <Row className="show-grid">
-            <Col className="mb25-xs" xs={12} md={5}>
+            <Col xs={12}>
               <div className="section-header">
                 <h2 className="decor">account information</h2>
               </div>
