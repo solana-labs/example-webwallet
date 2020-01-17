@@ -109,7 +109,6 @@ export class Settings extends React.Component {
               {[
                 web3.testnetChannelEndpoint('stable'),
                 web3.testnetChannelEndpoint('beta'),
-                web3.testnetChannelEndpoint('edge'),
                 'http://localhost:8899',
               ].map((url, index) => (
                 <MenuItem
