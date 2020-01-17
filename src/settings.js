@@ -61,7 +61,7 @@ export class Settings extends React.Component {
     });
 
     try {
-      const [blockhash, feeCalculator] = await connection.getRecentBlockhash();
+      const {blockhash, feeCalculator} = await connection.getRecentBlockhash();
       const accountStorageOverhead = 128;
       const minBalanceForRentException = await connection.getMinimumBalanceForRentExemption(
         accountStorageOverhead,

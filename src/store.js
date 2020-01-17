@@ -52,7 +52,7 @@ export class Store {
     let feeCalculator;
     let minBalanceForRentException;
     try {
-      [, feeCalculator] = await connection.getRecentBlockhash();
+      feeCalculator = (await connection.getRecentBlockhash()).feeCalculator;
       const accountStorageOverhead = 128;
       minBalanceForRentException = await connection.getMinimumBalanceForRentExemption(
         accountStorageOverhead,
