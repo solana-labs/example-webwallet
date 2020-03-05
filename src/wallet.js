@@ -312,6 +312,12 @@ SettingsModal.propTypes = {
   store: PropTypes.object,
 };
 
+const WalletDisplayModeEnum = Object.freeze({
+  'MainPanel': 1,
+  'TokenRequest': 2,
+  'SendCustomTransactionRequest': 3
+});
+
 export class Wallet extends React.Component {
   state = {
     messages: [],
@@ -322,7 +328,6 @@ export class Wallet extends React.Component {
     url: '',
     requestMode: false,
     requesterOrigin: '*',
-    requestPending: false,
     requestedPublicKey: '',
     requestedAmount: '',
     recipientPublicKey: '',
@@ -330,6 +335,10 @@ export class Wallet extends React.Component {
     recipientIdentity: null,
     confirmationSignature: null,
     transactionConfirmed: null,
+    unsignedTransaction: null,
+    formattedUnsignedTransaction: '',
+    unsignedTransactionDescription: '',
+    displayMode: WalletDisplayModeEnum.MainPanel,
   };
 
   setConfirmationSignature(confirmationSignature) {
@@ -431,7 +440,6 @@ export class Wallet extends React.Component {
   };
 
   onAddFunds(params, origin) {
-    if (!params || this.state.requestPending) return;
     if (!params.pubkey || !params.network) {
       if (!params.pubkey) this.addError(`Request did not specify a public key`);
       if (!params.network) this.addError(`Request did not specify a network`);
@@ -453,9 +461,59 @@ export class Wallet extends React.Component {
 
     this.setState({
       requesterOrigin: origin,
-      requestPending: true,
       requestedAmount: `${params.amount || ''}`,
       requestedPublicKey: params.pubkey,
+      displayMode: WalletDisplayModeEnum.TokenRequest,
+    });
+  }
+
+  onSendCustomTransactionRequest(params, origin) {
+    if (!params.network || !params.transaction) {
+      if (!params.network) this.addError(`Request did not specify a network`);
+      if (!params.transaction) this.addError(`Request did not specify a transaction`);
+      return;
+    }
+
+    let requestedNetwork;
+    try {
+      requestedNetwork = new URL(params.network).origin;
+    } catch (err) {
+      this.addError(`Request network is invalid: "${params.network}"`);
+      return;
+    }
+
+    const walletNetwork = new URL(this.props.store.networkEntryPoint).origin;
+    if (requestedNetwork !== walletNetwork) {
+      this.props.store.setNetworkEntryPoint(requestedNetwork);
+      this.addWarning(
+        `Changed wallet network from "${walletNetwork}" to "${requestedNetwork}"`,
+      );
+    }
+
+    const transaction = new web3.Transaction();
+    const inputs = JSON.parse(params.transaction);
+
+    inputs.map(input  => {
+      const converted = {};
+      converted.keys = [];
+      converted.programId = new web3.PublicKey(input.programId);
+      converted.data = Buffer.from(input.data, 'hex');
+      input.keys.map(key => {
+        converted.keys.push({
+          pubkey: new web3.PublicKey(key.pubkey),
+          isSigner: key.isSigner,
+          isDebitable: key.isDebitable,
+        });
+      });
+      transaction.add(converted);
+    });
+
+    this.setState({
+      requesterOrigin: origin,
+      unsignedTransactionDescription: params.description ? params.description : '',
+      unsignedTransaction: transaction,
+      formattedUnsignedTransaction: JSON.stringify(JSON.parse(params.transaction), null, 4),
+      displayMode: WalletDisplayModeEnum.SendCustomTransactionRequest,
     });
   }
 
@@ -471,7 +529,10 @@ export class Wallet extends React.Component {
       if (e.data) {
         switch (e.data.method) {
           case 'addFunds':
-            this.onAddFunds(e.data.params, e.origin);
+            this.onAddFunds(e.data.params, e.currentTarget.origin);
+            return true;
+          case 'sendCustomTransaction':
+            this.onSendCustomTransactionRequest(e.data.params, e.currentTarget.origin);
             return true;
         }
       }
@@ -548,7 +609,7 @@ export class Wallet extends React.Component {
   sendTransaction(closeOnSuccess) {
     this.runModal('Sending Transaction', 'Please wait...', async () => {
       const amount = this.state.recipientAmount;
-      this.setState({requestedAmount: '', requestPending: false});
+      this.setState({requestedAmount: ''});
       const transaction = web3.SystemProgram.transfer(
         this.state.account.publicKey,
         new web3.PublicKey(this.state.recipientPublicKey),
@@ -582,6 +643,35 @@ export class Wallet extends React.Component {
     });
   }
 
+  signAndSendTransaction(closeOnSuccess) {
+    this.runModal('Sending Transaction', 'Please wait...', async () => {
+      let signature = '';
+      try {
+        signature = await web3.sendAndConfirmTransaction(
+          this.web3sol,
+          this.state.unsignedTransaction,
+          this.state.account,
+        );
+      } catch (err) {
+        // Transaction failed but fees were still taken
+        this.setState({
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
+        });
+        this.postWindowMessage('sendCustomTransactionResponse', {err: true});
+        throw err;
+      }
+
+      this.postWindowMessage('sendCustomTransactionResponse', {signature});
+      if (closeOnSuccess) {
+        window.close();
+      } else {
+        this.setState({
+          balance: await this.web3sol.getBalance(this.state.account.publicKey),
+        });
+      }
+    });
+  }
+
   confirmTransaction() {
     this.runModal('Confirming Transaction', 'Please wait...', async () => {
       const result = await this.web3sol.confirmTransaction(
@@ -597,6 +687,8 @@ export class Wallet extends React.Component {
     return (
       this.state.recipientPublicKey === null ||
       this.state.recipientAmount === null
+    ) && (
+      this.state.formattedUnsignedTransaction === null
     );
   }
 
@@ -621,13 +713,24 @@ export class Wallet extends React.Component {
       />
     ) : null;
 
+    let panel = <div/>;
+    switch (this.state.displayMode) {
+      case WalletDisplayModeEnum.MainPanel:
+        panel = this.renderMainPanel();
+        break;
+      case WalletDisplayModeEnum.TokenRequest:
+        panel = this.renderTokenRequestPanel();
+        break;
+      case WalletDisplayModeEnum.SendCustomTransactionRequest:
+        panel = this.renderSendCustomTransactionRequestPanel();
+        break;
+    }
+
     return (
       <div>
         {busyModal}
         {settingsModal}
-        {this.state.requestMode
-          ? this.renderTokenRequestPanel()
-          : this.renderMainPanel()}
+        {panel}
       </div>
     );
   }
@@ -894,6 +997,41 @@ export class Wallet extends React.Component {
           </Row>
         </Grid>
       </div>
+    );
+  }
+
+  renderSendCustomTransactionRequestPanel() {
+    return (
+      <Panel>
+        <Panel.Heading>Send custom transaction Request</Panel.Heading>
+        <Panel.Body>
+          <div>
+            {this.state.unsignedTransactionDescription.split('\n').map((i, key) => {
+              return <p key={key}>{i}</p>;
+            })}
+          </div>
+          <div className="btns">
+            <Button
+              disabled={this.sendDisabled()}
+              onClick={() => this.signAndSendTransaction(false)}
+            >
+              Send
+            </Button>
+            <Button
+              disabled={this.sendDisabled()}
+              onClick={() => this.signAndSendTransaction(true)}
+            >
+              Send & Close
+            </Button>
+          </div>
+          <p/>
+          <div>
+            <pre>
+              {this.state.formattedUnsignedTransaction}
+            </pre>
+          </div>
+        </Panel.Body>
+      </Panel>
     );
   }
 

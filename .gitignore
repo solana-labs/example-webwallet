@@ -4,3 +4,4 @@
 /dist/main.css
 *.sw[po]
 /store
+.idea
