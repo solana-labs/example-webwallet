@@ -1,6 +1,6 @@
 [![Build status][travis-image]][travis-url]
 
-[travis-image]: https://api.travis-ci.org/solana-labs/example-webwallet.svg?branch=master
+[travis-image]: https://travis-ci.org/solana-labs/example-webwallet.svg?branch=v1.0.3
 [travis-url]: https://travis-ci.org/solana-labs/example-webwallet
 
 # Example Web Wallet
