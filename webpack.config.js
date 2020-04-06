@@ -54,7 +54,7 @@ module.exports = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.EnvironmentPlugin({
-      CHANNEL: 'stable',
+      CLUSTER: 'devnet',
     }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output

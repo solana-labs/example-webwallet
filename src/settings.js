@@ -107,8 +107,9 @@ export class Settings extends React.Component {
               onSelect={::this.setNetworkEntryPoint}
             >
               {[
-                web3.testnetChannelEndpoint('stable'),
-                web3.testnetChannelEndpoint('beta'),
+                web3.clusterApiUrl('mainnet-beta'),
+                web3.clusterApiUrl('testnet'),
+                web3.clusterApiUrl('devnet'),
                 'http://localhost:8899',
               ].map((url, index) => (
                 <MenuItem

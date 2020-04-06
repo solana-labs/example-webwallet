@@ -24,9 +24,7 @@ export class Store {
     }
 
     if (typeof this.networkEntryPoint !== 'string') {
-      await this.setNetworkEntryPoint(
-        web3.testnetChannelEndpoint(process.env.CHANNEL),
-      );
+      await this.setNetworkEntryPoint(web3.clusterApiUrl(process.env.CLUSTER));
     } else {
       await this.resetConnection();
     }

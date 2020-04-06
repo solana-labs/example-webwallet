@@ -62,7 +62,7 @@ walletWindow.postMessage({
   params: {
     pubkey: '7q4tpevKWZFSXszPfnvWDuuE19EhSnsAmt5x4MqCyyVb',
     amount: 150,
-    network: 'https://api.beta.testnet.solana.com',
+    network: 'https://devnet.solana.com',
   },
 }, WALLET_URL);
 ```
