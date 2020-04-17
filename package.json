@@ -64,7 +64,7 @@
     "promisify": "0.0.3",
     "prop-types": "^15.6.2",
     "react": "^16.4.2",
-    "react-bootstrap": "~1.0.0",
+    "react-bootstrap": "~0.33.0",
     "react-dom": "^16.4.2",
     "sass": "^1.22.9",
     "semver": "^7.0.0",
