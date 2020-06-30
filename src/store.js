@@ -51,9 +51,8 @@ export class Store {
     let minBalanceForRentException;
     try {
       feeCalculator = (await connection.getRecentBlockhash()).feeCalculator;
-      const accountStorageOverhead = 128;
       minBalanceForRentException = await connection.getMinimumBalanceForRentExemption(
-        accountStorageOverhead,
+        0,
       );
       // commitment params are only supported >= 0.21.0
       const version = await connection.getVersion();

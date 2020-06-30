@@ -61,12 +61,10 @@ export class Settings extends React.Component {
     });
 
     try {
-      const {blockhash, feeCalculator} = await connection.getRecentBlockhash();
-      const accountStorageOverhead = 128;
+      const {feeCalculator} = await connection.getRecentBlockhash();
       const minBalanceForRentException = await connection.getMinimumBalanceForRentExemption(
-        accountStorageOverhead,
+        0,
       );
-      console.log('blockhash:', blockhash);
       if (this.state.checkNetworkCount <= checkNetworkCount) {
         this.props.store.setFeeCalculator(feeCalculator);
         this.props.store.setMinBalanceForRentExemption(
