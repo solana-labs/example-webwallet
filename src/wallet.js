@@ -18,6 +18,7 @@ import {
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import * as web3 from '@solana/web3.js';
+import bs58 from 'bs58';
 
 import Loader from './components/Loader';
 import NetworkSelect from './components/NetworkSelect';
@@ -189,18 +190,17 @@ class SignatureInput extends React.Component {
   };
 
   getValidationState(value) {
-    const length = value.length;
-    if (length === 88) {
-      if (value.match(/^[A-Za-z0-9]+$/)) {
+    if (value.length === 0) return null;
+
+    try {
+      if (bs58.decode(value).length === 64) {
         return 'success';
+      } else {
+        return 'error';
       }
+    } catch (err) {
       return 'error';
-    } else if (length > 44) {
-      return 'error';
-    } else if (length > 0) {
-      return 'warning';
     }
-    return null;
   }
 
   handleChange(e) {
@@ -353,9 +353,9 @@ export class Wallet extends React.Component {
     const configKey = new web3.PublicKey(
       'Config1111111111111111111111111111111111111',
     );
-    const accounts = await this.web3sol.getProgramAccounts(configKey);
-    for (const account of accounts) {
-      const validatorInfo = web3.ValidatorInfo.fromConfigData(account[1].data);
+    const keyAndAccountList = await this.web3sol.getProgramAccounts(configKey);
+    for (const {account} of keyAndAccountList) {
+      const validatorInfo = web3.ValidatorInfo.fromConfigData(account.data);
       if (validatorInfo && validatorInfo.key.equals(publicKey)) {
         return validatorInfo.info;
       }
@@ -560,7 +560,8 @@ export class Wallet extends React.Component {
         signature = await web3.sendAndConfirmTransaction(
           this.web3sol,
           transaction,
-          this.state.account,
+          [this.state.account],
+          {confirmations: 1},
         );
       } catch (err) {
         // Transaction failed but fees were still taken
@@ -571,6 +572,7 @@ export class Wallet extends React.Component {
         throw err;
       }
 
+      this.addInfo(`Transaction ${signature} has been confirmed`);
       this.postWindowMessage('addFundsResponse', {signature, amount});
       if (closeOnSuccess) {
         window.close();
@@ -584,11 +586,18 @@ export class Wallet extends React.Component {
 
   confirmTransaction() {
     this.runModal('Confirming Transaction', 'Please wait...', async () => {
-      const result = await this.web3sol.confirmTransaction(
-        this.state.confirmationSignature,
-      );
+      const result = (
+        await this.web3sol.confirmTransaction(
+          this.state.confirmationSignature,
+          1,
+        )
+      ).value;
+      console.log({result});
+      const transactionConfirmed =
+        result !== null &&
+        (result.confirmations === null || result.confirmations > 0);
       this.setState({
-        transactionConfirmed: result,
+        transactionConfirmed,
       });
     });
   }

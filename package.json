@@ -52,6 +52,7 @@
     "babel-runtime": "^6.26.0",
     "bip39": "^3.0.2",
     "body-parser": "^1.18.3",
+    "bs58": "^4.0.1",
     "copy-to-clipboard": "^3.0.8",
     "css-loader": "^3.0.0",
     "event-emitter": "^0.3.5",
